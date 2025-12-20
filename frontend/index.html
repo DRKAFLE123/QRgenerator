@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-qrcode"></i> QR Generator</h1>
+            <p>Create custom QR codes for free</p>
+        </header>
+
+        <main class="generator-card">
+            <div class="controls-section">
+                <!-- Mode Tabs -->
+                <div class="mode-tabs">
+                    <button class="tab-btn active" onclick="switchMode('single')" id="tab-single">
+                        <i class="fa-solid fa-link"></i> Single Link QR
+                    </button>
+                    <button class="tab-btn" onclick="switchMode('bio')" id="tab-bio">
+                        <i class="fa-solid fa-id-card"></i> Bio Page QR
+                    </button>
+                </div>
+
+                <!-- Single Link Controls -->
+                <div id="mode-single">
+                    <!-- Type Selector -->
+                    <div class="input-group">
+                        <label for="qr-type">QR Type</label>
+                        <div class="select-wrapper">
+                            <select id="qr-type" onchange="updateForm()">
+                                <option value="url">Website URL</option>
+                                <option value="text">Plain Text</option>
+                                <option value="wifi">WiFi Network</option>
+                                <option value="email">Email</option>
+                                <option value="phone">Phone Number</option>
+                                <option value="sms">SMS Message</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="twitter">Twitter / X</option>
+                                <option value="linkedin">LinkedIn</option>
+                                <option value="youtube">YouTube</option>
+                                <option value="tiktok">TikTok</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Input Fields -->
+                    <div id="input-forms">
+                        <!-- URL Form -->
+                        <div id="form-url" class="active-form">
+                            <div class="input-group">
+                                <label>Website URL</label>
+                                <input type="url" id="url-input" placeholder="https://example.com">
+                            </div>
+                        </div>
+
+                        <!-- Text Form -->
+                        <div id="form-text" class="hidden-form">
+                            <div class="input-group">
+                                <label>Content</label>
+                                <textarea id="text-input" placeholder="Enter your text here..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- WiFi Form -->
+                        <div id="form-wifi" class="hidden-form">
+                            <div class="input-group">
+                                <label>Network Name (SSID)</label>
+                                <input type="text" id="wifi-ssid" placeholder="MyWiFi">
+                            </div>
+                            <div class="input-group">
+                                <label>Password</label>
+                                <input type="text" id="wifi-password" placeholder="Password">
+                            </div>
+                            <div class="input-group">
+                                <label>Encryption</label>
+                                <select id="wifi-type">
+                                    <option value="WPA">WPA/WPA2</option>
+                                    <option value="WEP">WEP</option>
+                                    <option value="nopass">No Encryption</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Email Form -->
+                        <div id="form-email" class="hidden-form">
+                            <div class="input-group">
+                                <label>Email Address</label>
+                                <input type="email" id="email-address" placeholder="name@example.com">
+                            </div>
+                            <div class="input-group">
+                                <label>Subject</label>
+                                <input type="text" id="email-subject" placeholder="Hello">
+                            </div>
+                            <div class="input-group">
+                                <label>Message</label>
+                                <textarea id="email-body" placeholder="Your message..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Phone Form -->
+                        <div id="form-phone" class="hidden-form">
+                            <div class="input-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="phone-number" placeholder="+1 234 567 8900">
+                            </div>
+                        </div>
+
+                        <!-- SMS Form -->
+                        <div id="form-sms" class="hidden-form">
+                            <div class="input-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="sms-number" placeholder="+1 234 567 8900">
+                            </div>
+                            <div class="input-group">
+                                <label>Message</label>
+                                <textarea id="sms-message" placeholder="Your message..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Social Media Forms (Generic Structure) -->
+                        <div id="form-social" class="hidden-form">
+                            <div class="input-group">
+                                <label id="social-label">Profile URL</label>
+                                <input type="text" id="social-input" placeholder="https://...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customization Options -->
+                    <div class="customization-options">
+                        <div class="input-group color-picker">
+                            <label>Color</label>
+                            <input type="color" id="color-fg" value="#000000">
+                        </div>
+                        <div class="input-group color-picker">
+                            <label>Background</label>
+                            <input type="color" id="color-bg" value="#FFFFFF">
+                        </div>
+                    </div>
+
+                    <button id="generate-btn" onclick="generateQR()">
+                        Generate QR Code <i class="fa-solid fa-bolt"></i>
+                    </button>
+                </div> <!-- End of mode-single -->
+
+                <!-- Bio Page Controls -->
+                <div id="mode-bio" style="display: none;">
+                    <div class="input-group">
+                        <label>Organization / Name</label>
+                        <input type="text" id="bio-org-name" placeholder="My Organization">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Website URL (Optional)</label>
+                        <input type="url" id="bio-website" placeholder="https://mywebsite.com">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Theme</label>
+                        <select id="bio-theme">
+                            <option value="modern">Modern (Clean & Minimal)</option>
+                            <option value="vibrant">Vibrant (Colorful & Bold)</option>
+                            <option value="business">Business (Professional & Grid)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Logo / Avatar <span style="color: #999; font-size: 0.85rem;">(Max 10MB)</span></label>
+                        <input type="file" id="bio-logo" accept="image/*"
+                            onchange="validateFileSize(this, 'logo-error')">
+                        <small id="logo-error" style="color: #e74c3c; display: none; margin-top: 5px;"></small>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Cover Image <span style="color: #999; font-size: 0.85rem;">(Max 10MB)</span></label>
+                        <input type="file" id="bio-cover" accept="image/*"
+                            onchange="validateFileSize(this, 'cover-error')">
+                        <small id="cover-error" style="color: #e74c3c; display: none; margin-top: 5px;"></small>
+                    </div>
+
+                    <div id="bio-links-container">
+                        <label>Social Links</label>
+                        <!-- Dynamic links will be added here -->
+                    </div>
+
+                    <button class="secondary-btn" onclick="addBioLink()">
+                        <i class="fa-solid fa-plus"></i> Add Link
+                    </button>
+
+                    <div class="customization-options" style="margin-top: 2rem;">
+                        <div class="input-group color-picker">
+                            <label>Theme Color</label>
+                            <input type="color" id="bio-color" value="#FF6B6B">
+                        </div>
+                        <div class="input-group color-picker">
+                            <label>Background Color</label>
+                            <input type="color" id="bio-bg-color" value="#F8F9FA">
+                        </div>
+                    </div>
+
+                    <button id="create-bio-btn" onclick="createBioPage()">
+                        Create Bio Page <i class="fa-solid fa-magic"></i>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <div class="qr-preview-container">
+                    <div id="qr-placeholder">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <p>QR Code will appear here</p>
+                    </div>
+                    <img id="qr-image" src="" alt="QR Code" style="display: none;">
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="downloadQR()">
+                        <i class="fa-solid fa-download"></i> Download
+                    </button>
+                    <button class="action-btn" onclick="copyQR()">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

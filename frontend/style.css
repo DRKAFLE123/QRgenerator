@@ -1,0 +1,423 @@
+:root {
+    /* Neon Light Hybrid Theme Variables */
+    --bg-color: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --primary-color: #FF6B6B;
+    /* Coral Pink */
+    --secondary-color: #4ECDC4;
+    /* Soft Blue */
+    --text-main: #2D3436;
+    --text-muted: #636E72;
+    --border-color: #DFE6E9;
+    --input-bg: #FFFFFF;
+
+    /* Neon Structure Variables */
+    --border-radius: 0px;
+    /* Sharp corners for Neon feel */
+    --border-width: 2px;
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 15px 35px rgba(255, 107, 107, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background-image:
+        linear-gradient(90deg, rgba(223, 230, 233, 0.3) 1px, transparent 1px),
+        linear-gradient(rgba(223, 230, 233, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    /* Grid pattern from Neon theme but light */
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+    text-transform: uppercase;
+    /* Neon style typography */
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.generator-card {
+    background: var(--card-bg);
+    border: var(--border-width) solid var(--text-main);
+    /* Sharp border */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    box-shadow: 10px 10px 0px rgba(45, 52, 54, 0.1);
+    /* Brutalist/Neon shadow */
+    overflow: hidden;
+}
+
+/* Left Side - Controls */
+.controls-section {
+    padding: 2rem;
+    border-right: var(--border-width) solid var(--border-color);
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 1rem;
+    background: var(--input-bg);
+    border: var(--border-width) solid var(--border-color);
+    color: var(--text-main);
+    font-size: 1rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 4px 4px 0px rgba(255, 107, 107, 0.2);
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-muted);
+}
+
+select {
+    appearance: none;
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.customization-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.color-picker {
+    flex: 1;
+}
+
+.color-picker input {
+    height: 50px;
+    padding: 0.2rem;
+    cursor: pointer;
+}
+
+#generate-btn {
+    width: 100%;
+    padding: 1.2rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#generate-btn:hover {
+    background: #FF5252;
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px rgba(45, 52, 54, 0.2);
+}
+
+/* Right Side - Preview */
+.preview-section {
+    padding: 3rem;
+    background: #FAFAFA;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-left: var(--border-width) solid var(--border-color);
+}
+
+.qr-preview-container {
+    width: 300px;
+    height: 300px;
+    background: white;
+    border: var(--border-width) solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    position: relative;
+    box-shadow: 10px 10px 0px rgba(230, 230, 230, 1);
+}
+
+#qr-placeholder {
+    text-align: center;
+    color: var(--border-color);
+}
+
+#qr-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+#qr-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    max-width: 300px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 0.8rem;
+    background: white;
+    border: var(--border-width) solid var(--text-main);
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px rgba(78, 205, 196, 0.3);
+}
+
+/* Utility Classes */
+.hidden-form {
+    display: none;
+}
+
+.active-form {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .generator-card {
+        grid-template-columns: 1fr;
+    }
+
+    .controls-section {
+        border-right: none;
+        border-bottom: var(--border-width) solid var(--border-color);
+    }
+
+    .preview-section {
+        border-left: none;
+        padding: 2rem;
+    }
+}
+
+/* --- New Styles for Bio Page Feature --- */
+
+/* Tabs */
+.mode-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: var(--border-width) solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 0.8rem;
+    background: #F1F2F6;
+    border: 2px solid transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.tab-btn:hover {
+    color: var(--text-main);
+    background: #E4E7EB;
+}
+
+.tab-btn.active {
+    color: white;
+    background: var(--text-main);
+    font-weight: 700;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary Button (Add Link) */
+.secondary-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: #F8F9FA;
+    border: 2px solid #DFE6E9;
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.secondary-btn:hover {
+    border-color: var(--text-main);
+    background: white;
+    transform: translateY(-2px);
+}
+
+/* Bio Link Row */
+.bio-link-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.bio-link-row select {
+    width: 140px;
+}
+
+.bio-link-row input {
+    flex: 1;
+}
+
+.remove-link-btn {
+    padding: 0 1rem;
+    background: #FFECEC;
+    color: #FF6B6B;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+}
+
+.remove-link-btn:hover {
+    background: #FF6B6B;
+    color: white;
+}
+
+/* Create Bio Button */
+#create-bio-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--text-main);
+    color: white;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#create-bio-btn:hover {
+    background: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
