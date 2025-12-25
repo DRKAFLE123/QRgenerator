@@ -76,6 +76,11 @@ class BioPageController extends Controller
             abort(404, 'Bio Page not found');
         }
 
+        // Check if page is active
+        if ($page->status !== 'active') {
+            abort(404, 'Bio Page is currently inactive');
+        }
+
         $links = json_decode($page->links, true);
         $theme = $page->theme ?? 'modern';
         $viewName = 'bio-page-' . $theme;
