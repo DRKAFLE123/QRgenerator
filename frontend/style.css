@@ -67,6 +67,30 @@ header p {
     font-size: 1.1rem;
 }
 
+.scanner-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.scanner-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.scanner-link:active {
+    transform: translateY(0);
+}
+
 .generator-card {
     background: var(--card-bg);
     border: var(--border-width) solid var(--text-main);

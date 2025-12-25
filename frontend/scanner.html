@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QR Code Scanner</title>
+    <link rel="stylesheet" href="scanner.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="scanner-container">
+        <!-- Header -->
+        <header class="scanner-header">
+            <a href="index.html" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1><i class="fa-solid fa-camera"></i> QR Scanner</h1>
+            <button id="switch-camera-btn" class="icon-btn" title="Switch Camera">
+                <i class="fa-solid fa-camera-rotate"></i>
+            </button>
+        </header>
+
+        <!-- Camera Section -->
+        <div class="camera-section">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" hidden></canvas>
+            
+            <!-- Scanning Overlay -->
+            <div class="scan-overlay">
+                <div class="scan-frame">
+                    <div class="corner top-left"></div>
+                    <div class="corner top-right"></div>
+                    <div class="corner bottom-left"></div>
+                    <div class="corner bottom-right"></div>
+                    <div class="scan-line"></div>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="status-message" class="status-message">
+                <i class="fa-solid fa-qrcode"></i>
+                <p>Position QR code within frame</p>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result-section" class="result-section hidden">
+            <div class="result-header">
+                <h2><i class="fa-solid fa-check-circle"></i> Scanned Successfully</h2>
+                <button id="close-result-btn" class="close-btn">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="result-content">
+                <div class="result-type">
+                    <i class="fa-solid fa-tag"></i>
+                    <span id="result-type-text">URL</span>
+                </div>
+                <div class="result-data">
+                    <p id="result-text"></p>
+                </div>
+                <div class="result-actions">
+                    <button id="copy-result-btn" class="action-button primary">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                    <button id="open-result-btn" class="action-button secondary">
+                        <i class="fa-solid fa-external-link-alt"></i> Open
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="error-section" class="error-section hidden">
+            <div class="error-content">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <h2>Camera Access Required</h2>
+                <p id="error-message">Please allow camera access to scan QR codes.</p>
+                <button id="retry-btn" class="action-button primary">
+                    <i class="fa-solid fa-redo"></i> Retry
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- jsQR Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="scanner.js"></script>
+</body>
+
+</html>

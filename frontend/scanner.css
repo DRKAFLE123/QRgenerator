@@ -1,0 +1,438 @@
+:root {
+    --primary-color: #FF6B6B;
+    --secondary-color: #4ECDC4;
+    --success-color: #51CF66;
+    --error-color: #FF6B6B;
+    --text-main: #2D3436;
+    --text-muted: #636E72;
+    --bg-color: #0A0E27;
+    --card-bg: #FFFFFF;
+    --overlay-bg: rgba(10, 14, 39, 0.85);
+    --border-radius: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+.scanner-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Header */
+.scanner-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.scanner-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.back-btn,
+.icon-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+}
+
+.back-btn:hover,
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.back-btn:active,
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Camera Section */
+.camera-section {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+
+#video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Scanning Overlay */
+.scan-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.scan-frame {
+    width: 280px;
+    height: 280px;
+    position: relative;
+}
+
+.corner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--success-color);
+}
+
+.corner.top-left {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 8px 0 0 0;
+}
+
+.corner.top-right {
+    top: 0;
+    right: 0;
+    border-left: none;
+    border-bottom: none;
+    border-radius: 0 8px 0 0;
+}
+
+.corner.bottom-left {
+    bottom: 0;
+    left: 0;
+    border-right: none;
+    border-top: none;
+    border-radius: 0 0 0 8px;
+}
+
+.corner.bottom-right {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
+    border-radius: 0 0 8px 0;
+}
+
+/* Scanning Animation */
+.scan-line {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--success-color), transparent);
+    top: 0;
+    animation: scan 2s ease-in-out infinite;
+    box-shadow: 0 0 10px var(--success-color);
+}
+
+@keyframes scan {
+    0%, 100% {
+        top: 0;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: calc(100% - 3px);
+    }
+}
+
+/* Status Message */
+.status-message {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--overlay-bg);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.status-message i {
+    font-size: 2rem;
+    color: var(--success-color);
+}
+
+.status-message p {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Result Section */
+.result-section {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.result-section.show {
+    transform: translateY(0);
+}
+
+.result-header {
+    padding: 1.5rem;
+    border-bottom: 2px solid #F1F3F5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.result-header h2 {
+    font-size: 1.25rem;
+    color: var(--success-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.close-btn {
+    background: #F1F3F5;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-muted);
+}
+
+.close-btn:hover {
+    background: #E9ECEF;
+    color: var(--text-main);
+}
+
+.result-content {
+    padding: 1.5rem;
+}
+
+.result-type {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.result-data {
+    background: #F8F9FA;
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #E9ECEF;
+}
+
+.result-data p {
+    color: var(--text-main);
+    font-size: 1rem;
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+.result-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.action-button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.action-button.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.action-button.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.action-button.secondary {
+    background: #F1F3F5;
+    color: var(--text-main);
+}
+
+.action-button.secondary:hover {
+    background: #E9ECEF;
+    transform: translateY(-2px);
+}
+
+.action-button:active {
+    transform: translateY(0);
+}
+
+/* Error Section */
+.error-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+}
+
+.error-content {
+    text-align: center;
+    padding: 2rem;
+    color: white;
+}
+
+.error-content i {
+    font-size: 4rem;
+    color: var(--error-color);
+    margin-bottom: 1.5rem;
+}
+
+.error-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.error-content p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .scanner-container {
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .scan-frame {
+        width: 320px;
+        height: 320px;
+    }
+
+    .scanner-header h1 {
+        font-size: 1.75rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .result-section {
+        max-height: 60vh;
+    }
+}
+
+/* Landscape Mode */
+@media (orientation: landscape) and (max-height: 600px) {
+    .scan-frame {
+        width: 200px;
+        height: 200px;
+    }
+
+    .status-message {
+        bottom: 1rem;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .status-message i {
+        font-size: 1.5rem;
+    }
+
+    .status-message p {
+        font-size: 0.85rem;
+    }
+}
