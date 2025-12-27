@@ -476,12 +476,21 @@ textarea {
     box-shadow: 8px 8px 0px rgba(78, 205, 196, 0.2);
 }
 
+.toast.error {
+    border-color: #FF6B6B;
+    box-shadow: 8px 8px 0px rgba(255, 107, 107, 0.2);
+}
+
 .toast i {
     font-size: 1.25rem;
 }
 
 .toast.success i {
     color: var(--secondary-color);
+}
+
+.toast.error i {
+    color: #FF6B6B;
 }
 
 .toast .message {

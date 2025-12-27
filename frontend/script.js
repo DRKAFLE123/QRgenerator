@@ -21,6 +21,22 @@ function validateFileSize(input, errorId) {
     }
 }
 
+// URL Validation helper
+function isValidURL(url) {
+    if (!url) return false;
+    try {
+        const pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+        return !!pattern.test(url);
+    } catch (e) {
+        return false;
+    }
+}
+
 function showNotification(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -99,7 +115,12 @@ async function createBioPage() {
     const bgColor = document.getElementById('bio-bg-color').value;
 
     if (!orgName) {
-        alert('Please enter an Organization Name');
+        showNotification('Please enter an Organization Name', 'error');
+        return;
+    }
+
+    if (website && !isValidURL(website)) {
+        showNotification('Please enter a valid website URL (e.g., https://example.com)', 'error');
         return;
     }
 
@@ -113,8 +134,16 @@ async function createBioPage() {
     });
 
     if (links.length === 0) {
-        alert('Please add at least one link');
+        showNotification('Please add at least one social link', 'error');
         return;
+    }
+
+    // Validate social links
+    for (const link of links) {
+        if (!link.url.includes('.') && !link.url.startsWith('http') && link.platform === 'website') {
+            showNotification(`Invalid URL for ${link.platform}`, 'error');
+            return;
+        }
     }
 
     // Show loading
@@ -155,7 +184,7 @@ async function createBioPage() {
 
     } catch (error) {
         console.error(error);
-        alert('Error creating Bio Page');
+        showNotification('Error creating Bio Page', 'error');
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
@@ -188,7 +217,7 @@ async function generateQRForUrl(url, color, bgColor = '#FFFFFF') {
 
     } catch (error) {
         console.error(error);
-        alert('Failed to generate QR code');
+        showNotification('Failed to generate QR code', 'error');
     }
 }
 
@@ -272,7 +301,12 @@ async function generateQR() {
     }
 
     if (!data) {
-        alert('Please enter valid data');
+        showNotification('Please enter some content for the QR code', 'error');
+        return;
+    }
+
+    if (type === 'url' && !isValidURL(data)) {
+        showNotification('Please enter a valid URL (e.g., https://example.com)', 'error');
         return;
     }
 
@@ -309,7 +343,7 @@ async function generateQR() {
 
     } catch (error) {
         console.error(error);
-        alert('Failed to generate QR code');
+        showNotification('Failed to generate QR code', 'error');
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
@@ -362,16 +396,16 @@ async function copyQR() {
                         await navigator.clipboard.write([
                             new ClipboardItem({ 'image/png': blob })
                         ]);
-                        alert('QR Code copied to clipboard!');
+                        showNotification('QR Code copied to clipboard!');
                     } catch (e) {
                         console.error('Clipboard write failed', e);
-                        alert('Failed to copy: ' + e.message);
+                        showNotification('Failed to copy image', 'error');
                     }
                 }, 'image/png');
             };
             image.onerror = (e) => {
                 console.error("Image load failed", e);
-                alert("Failed to process QR image");
+                showNotification("Failed to process QR image", 'error');
             };
             image.src = img.src;
         } else {
@@ -383,10 +417,10 @@ async function copyQR() {
                     [blob.type]: blob
                 })
             ]);
-            alert('QR Code copied to clipboard!');
+            showNotification('QR Code copied to clipboard!');
         }
     } catch (err) {
         console.error(err);
-        alert('Failed to copy');
+        showNotification('Failed to copy', 'error');
     }
 }
