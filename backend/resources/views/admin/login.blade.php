@@ -111,6 +111,13 @@
             margin-bottom: 1.5rem;
             text-align: left;
         }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 1.5rem;
+                width: 90%;
+            }
+        }
     </style>
 </head>
 
