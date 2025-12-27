@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
@@ -15,6 +16,12 @@ class AdminDashboardController extends Controller
             'inactive' => DB::table('bio_pages')->where('status', 'inactive')->count(),
             'paid' => DB::table('bio_pages')->where('payment_status', 'paid')->count(),
             'unpaid' => DB::table('bio_pages')->where('payment_status', 'unpaid')->count(),
+            'expiring_soon' => DB::table('bio_pages')
+                ->where('status', 'active')
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now()->addDays(7))
+                ->where('expires_at', '>', now())
+                ->count(),
         ];
     }
 
@@ -32,7 +39,14 @@ class AdminDashboardController extends Controller
         }
 
         if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
+            if ($request->status === 'expiring') {
+                $query->where('status', 'active')
+                    ->whereNotNull('expires_at')
+                    ->where('expires_at', '<=', now()->addDays(7))
+                    ->where('expires_at', '>', now());
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         if ($request->has('payment_status') && $request->payment_status) {
@@ -89,6 +103,56 @@ class AdminDashboardController extends Controller
 
         return response()->json([
             'message' => 'Payment status updated successfully',
+            'stats' => $this->getStats()
+        ]);
+    }
+
+    public function renewSubscription(Request $request, $id)
+    {
+        $request->validate([
+            'days' => 'required|in:180,365'
+        ]);
+
+        $page = DB::table('bio_pages')->where('id', $id)->first();
+        if (!$page) {
+            return response()->json(['message' => 'Page not found'], 404);
+        }
+
+        // If it's already expired or has no expiry, start from now
+        // If it's still active, extend from current expiry
+        $baseDate = ($page->expires_at && now()->lessThan($page->expires_at))
+            ? \Carbon\Carbon::parse($page->expires_at)
+            : now();
+
+        $newExpiry = $baseDate->addDays($request->days);
+
+        DB::table('bio_pages')->where('id', $id)->update([
+            'expires_at' => $newExpiry,
+            'payment_status' => 'paid',
+            'status' => 'active',
+            'updated_at' => now()
+        ]);
+
+        return response()->json([
+            'message' => "Subscription renewed for {$request->days} days",
+            'stats' => $this->getStats(),
+            'new_expiry' => $newExpiry->format('Y-m-d')
+        ]);
+    }
+
+    public function updateExpiry(Request $request, $id)
+    {
+        $request->validate([
+            'expiry_date' => 'required|date'
+        ]);
+
+        DB::table('bio_pages')->where('id', $id)->update([
+            'expires_at' => $request->expiry_date,
+            'updated_at' => now()
+        ]);
+
+        return response()->json([
+            'message' => 'Expiry date updated successfully',
             'stats' => $this->getStats()
         ]);
     }
@@ -152,14 +216,14 @@ class AdminDashboardController extends Controller
 
             // Generate QR as base64 image to embed in PDF
             $qrImage = base64_encode($qrBuilder->format('svg')->generate($url));
-            
+
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.pdf.qr', ['qrImage' => $qrImage, 'name' => $page->name, 'url' => $url]);
             return $pdf->download('qr-' . $page->name . '.pdf');
         }
 
         // For image formats
         $response = $qrBuilder->format($format)->generate($url);
-        
+
         $mimeTypes = [
             'svg' => 'image/svg+xml',
             'png' => 'image/png',

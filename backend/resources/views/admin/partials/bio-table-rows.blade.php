@@ -18,6 +18,29 @@
         </td>
         <td>{{ \Carbon\Carbon::parse($page->created_at)->format('M d, Y') }}</td>
         <td>
+            @if($page->expires_at)
+                @php
+                    $expiryDate = \Carbon\Carbon::parse($page->expires_at);
+                    $daysRemaining = now()->diffInDays($expiryDate, false);
+                    $isExpiringSoon = $daysRemaining <= 7 && $daysRemaining > 0;
+                    $isExpired = $daysRemaining <= 0;
+                @endphp
+                <div class="expiry-cell {{ $isExpired ? 'expired' : ($isExpiringSoon ? 'expiring' : '') }}"
+                    onclick="openExpiryModal('{{ $page->id }}', '{{ addslashes($page->name) }}', '{{ $expiryDate->format('Y-m-d') }}')"
+                    style="cursor: pointer;" title="Click to update expiry">
+                    {{ $expiryDate->format('M d, Y') }}
+                    @if($isExpiringSoon)
+                        <span class="expiry-warning" title="Expiring soon!">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </span>
+                    @endif
+                </div>
+            @else
+                <span class="text-muted" onclick="openExpiryModal('{{ $page->id }}', '{{ addslashes($page->name) }}', '')"
+                    style="cursor: pointer; text-decoration: underline;" title="Set expiry date">Not Set</span>
+            @endif
+        </td>
+        <td>
             <label class="switch">
                 <input type="checkbox" onchange="toggleStatus('{{ $page->id }}', this)" {{ $page->status === 'active' ? 'checked' : '' }}>
                 <span class="slider round"></span>
@@ -59,6 +82,10 @@
                         </a>
                     </div>
                 </div>
+                <button onclick="openRenewModal('{{ $page->id }}', '{{ addslashes($page->name) }}')" class="btn-icon renew"
+                    title="Renew Subscription">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                </button>
                 <button onclick="confirmDelete('{{ $page->id }}')" class="btn-icon delete" title="Delete">
                     <i class="fa-solid fa-trash"></i>
                 </button>
@@ -67,11 +94,11 @@
     </tr>
 @empty
     <tr>
-        <td colspan="6" style="text-align: center; padding: 2rem;">No bio pages found.</td>
+        <td colspan="7" style="text-align: center; padding: 2rem;">No bio pages found.</td>
     </tr>
 @endforelse
 <tr>
-    <td colspan="6" style="padding: 0;">
+    <td colspan="7" style="padding: 0;">
         <div class="pagination">
             {{ $bioPages->links('vendor.pagination.admin-custom') }}
         </div>
