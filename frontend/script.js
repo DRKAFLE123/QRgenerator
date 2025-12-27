@@ -140,8 +140,12 @@ async function createBioPage() {
 
     // Validate social links
     for (const link of links) {
-        if (!link.url.includes('.') && !link.url.startsWith('http') && link.platform === 'website') {
-            showNotification(`Invalid URL for ${link.platform}`, 'error');
+        if (link.platform === 'website' && !isValidURL(link.url)) {
+            showNotification(`Invalid URL for Website link`, 'error');
+            return;
+        }
+        if (['facebook', 'linkedin', 'youtube'].includes(link.platform) && !isValidURL(link.url)) {
+            showNotification(`Please enter a valid URL for ${link.platform}`, 'error');
             return;
         }
     }
@@ -305,7 +309,9 @@ async function generateQR() {
         return;
     }
 
-    if (type === 'url' && !isValidURL(data)) {
+    // Validate URL based types
+    const urlTypes = ['url', 'facebook', 'linkedin', 'youtube'];
+    if (urlTypes.includes(type) && !isValidURL(data)) {
         showNotification('Please enter a valid URL (e.g., https://example.com)', 'error');
         return;
     }
