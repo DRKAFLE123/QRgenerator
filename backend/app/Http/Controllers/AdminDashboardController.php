@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+// use Carbon\Carbon; - Using fully qualified names instead to satisfy linter issues
 
 class AdminDashboardController extends Controller
 {
@@ -19,8 +19,8 @@ class AdminDashboardController extends Controller
             'expiring_soon' => DB::table('bio_pages')
                 ->where('status', 'active')
                 ->whereNotNull('expires_at')
-                ->where('expires_at', '<=', now()->addDays(7))
-                ->where('expires_at', '>', now())
+                ->where('expires_at', '<=', \Carbon\Carbon::now()->addDays(7))
+                ->where('expires_at', '>', \Carbon\Carbon::now())
                 ->count(),
         ];
     }
@@ -42,8 +42,8 @@ class AdminDashboardController extends Controller
             if ($request->status === 'expiring') {
                 $query->where('status', 'active')
                     ->whereNotNull('expires_at')
-                    ->where('expires_at', '<=', now()->addDays(7))
-                    ->where('expires_at', '>', now());
+                    ->where('expires_at', '<=', \Carbon\Carbon::now()->addDays(7))
+                    ->where('expires_at', '>', \Carbon\Carbon::now());
             } else {
                 $query->where('status', $request->status);
             }
@@ -81,7 +81,7 @@ class AdminDashboardController extends Controller
 
         DB::table('bio_pages')->where('id', $id)->update([
             'status' => $request->status,
-            'updated_at' => now()
+            'updated_at' => \Carbon\Carbon::now()
         ]);
 
         return response()->json([
@@ -98,7 +98,7 @@ class AdminDashboardController extends Controller
 
         DB::table('bio_pages')->where('id', $id)->update([
             'payment_status' => $request->payment_status,
-            'updated_at' => now()
+            'updated_at' => \Carbon\Carbon::now()
         ]);
 
         return response()->json([
@@ -120,9 +120,9 @@ class AdminDashboardController extends Controller
 
         // If it's already expired or has no expiry, start from now
         // If it's still active, extend from current expiry
-        $baseDate = ($page->expires_at && now()->lessThan($page->expires_at))
+        $baseDate = ($page->expires_at && \Carbon\Carbon::now()->lessThan(\Carbon\Carbon::parse($page->expires_at)))
             ? \Carbon\Carbon::parse($page->expires_at)
-            : now();
+            : \Carbon\Carbon::now();
 
         $newExpiry = $baseDate->addDays($request->days);
 
@@ -130,7 +130,7 @@ class AdminDashboardController extends Controller
             'expires_at' => $newExpiry,
             'payment_status' => 'paid',
             'status' => 'active',
-            'updated_at' => now()
+            'updated_at' => \Carbon\Carbon::now()
         ]);
 
         return response()->json([
@@ -148,7 +148,7 @@ class AdminDashboardController extends Controller
 
         DB::table('bio_pages')->where('id', $id)->update([
             'expires_at' => $request->expiry_date,
-            'updated_at' => now()
+            'updated_at' => \Carbon\Carbon::now()
         ]);
 
         return response()->json([
