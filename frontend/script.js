@@ -21,6 +21,31 @@ function validateFileSize(input, errorId) {
     }
 }
 
+function showNotification(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <div class="message">${message}</div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
 
 // Mode Switching
 function switchMode(mode) {
