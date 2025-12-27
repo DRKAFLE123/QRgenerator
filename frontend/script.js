@@ -283,17 +283,37 @@ async function generateQR() {
         const ssid = document.getElementById('wifi-ssid').value;
         const pass = document.getElementById('wifi-password').value;
         const enc = document.getElementById('wifi-type').value;
+
+        if (!ssid) {
+            showNotification('Please enter a Network Name (SSID)', 'error');
+            return;
+        }
         data = `WIFI:S:${ssid};T:${enc};P:${pass};;`;
     } else if (type === 'email') {
         const email = document.getElementById('email-address').value;
         const subject = document.getElementById('email-subject').value;
         const body = document.getElementById('email-body').value;
+
+        if (!email || !email.includes('@')) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
         data = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     } else if (type === 'phone') {
-        data = document.getElementById('phone-number').value;
+        const phone = document.getElementById('phone-number').value;
+        if (!phone) {
+            showNotification('Please enter a phone number', 'error');
+            return;
+        }
+        data = phone;
     } else if (type === 'sms') {
         const number = document.getElementById('sms-number').value;
         const msg = document.getElementById('sms-message').value;
+
+        if (!number) {
+            showNotification('Please enter a recipient number', 'error');
+            return;
+        }
         data = `smsto:${number}:${msg}`;
     } else if (['facebook', 'instagram', 'twitter', 'linkedin', 'youtube', 'tiktok', 'whatsapp'].includes(type)) {
         data = document.getElementById('social-input').value;
