@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QR Code Scanner</title>
     <link rel="stylesheet" href="scanner.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
@@ -18,16 +19,22 @@
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
             <h1><i class="fa-solid fa-camera"></i> QR Scanner</h1>
-            <button id="switch-camera-btn" class="icon-btn" title="Switch Camera">
-                <i class="fa-solid fa-camera-rotate"></i>
-            </button>
+            <div class="header-actions">
+                <button id="upload-btn" class="icon-btn" title="Upload Image">
+                    <i class="fa-solid fa-upload"></i>
+                </button>
+                <button id="switch-camera-btn" class="icon-btn" title="Switch Camera">
+                    <i class="fa-solid fa-camera-rotate"></i>
+                </button>
+            </div>
+            <input type="file" id="image-input" accept="image/*" hidden>
         </header>
 
         <!-- Camera Section -->
         <div class="camera-section">
             <video id="video" autoplay playsinline></video>
             <canvas id="canvas" hidden></canvas>
-            
+
             <!-- Scanning Overlay -->
             <div class="scan-overlay">
                 <div class="scan-frame">
@@ -54,7 +61,7 @@
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="result-content">
                 <div class="result-type">
                     <i class="fa-solid fa-tag"></i>

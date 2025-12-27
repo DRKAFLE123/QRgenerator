@@ -16,6 +16,8 @@ const errorMessage = document.getElementById('error-message');
 
 // Buttons
 const switchCameraBtn = document.getElementById('switch-camera-btn');
+const uploadBtn = document.getElementById('upload-btn');
+const imageInput = document.getElementById('image-input');
 const closeResultBtn = document.getElementById('close-result-btn');
 const copyResultBtn = document.getElementById('copy-result-btn');
 const openResultBtn = document.getElementById('open-result-btn');
@@ -51,7 +53,7 @@ async function startCamera() {
 
         videoStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = videoStream;
-        
+
         // Wait for video to be ready
         await new Promise((resolve) => {
             video.onloadedmetadata = () => {
@@ -61,8 +63,8 @@ async function startCamera() {
         });
 
         // Set canvas size to match video
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
 
     } catch (error) {
         console.error('Camera Error:', error);
@@ -77,10 +79,10 @@ function scanQRCode() {
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
         // Draw video frame to canvas
         canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
+
         // Get image data
         const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
-        
+
         // Scan for QR code
         const code = jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: "dontInvert",
@@ -96,10 +98,57 @@ function scanQRCode() {
     requestAnimationFrame(scanQRCode);
 }
 
+// Handle Image Upload
+function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        const img = new Image();
+        img.onload = function () {
+            // Set canvas size to match image
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Draw image to canvas
+            canvasContext.drawImage(img, 0, 0);
+
+            // Get image data
+            try {
+                const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Scan for QR code
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (code) {
+                    handleQRCodeDetected(code.data);
+                } else {
+                    alert('No QR code found in this image. Please try another one or use the live camera.');
+                    // Reset input
+                    imageInput.value = '';
+                }
+            } catch (err) {
+                console.error('Decoding error:', err);
+                alert('Failed to process image. Make sure it is a valid QR code image.');
+                imageInput.value = '';
+            }
+        };
+        img.onerror = function () {
+            alert('Failed to load image. Please select a valid image file.');
+            imageInput.value = '';
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 // Handle QR Code Detection
 function handleQRCodeDetected(data) {
     scanning = false;
-    
+
     // Vibrate if supported
     if (navigator.vibrate) {
         navigator.vibrate(200);
@@ -107,7 +156,7 @@ function handleQRCodeDetected(data) {
 
     // Determine type
     const type = detectQRType(data);
-    
+
     // Display result
     resultText.textContent = data;
     resultTypeText.textContent = type;
@@ -119,6 +168,12 @@ function handleQRCodeDetected(data) {
         openResultBtn.style.display = 'flex';
     } else {
         openResultBtn.style.display = 'none';
+    }
+
+    // Resync canvas size to video if coming from camera
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
     }
 }
 
@@ -146,6 +201,9 @@ function detectQRType(data) {
 // Close Result and Resume Scanning
 function closeResult() {
     resultSection.classList.remove('show');
+    // Clear input
+    imageInput.value = '';
+
     setTimeout(() => {
         resultSection.classList.add('hidden');
         scanning = true;
@@ -158,12 +216,12 @@ async function copyResult() {
     const text = resultText.textContent;
     try {
         await navigator.clipboard.writeText(text);
-        
+
         // Visual feedback
         const originalText = copyResultBtn.innerHTML;
         copyResultBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
         copyResultBtn.style.background = 'linear-gradient(135deg, #51CF66 0%, #37B24D 100%)';
-        
+
         setTimeout(() => {
             copyResultBtn.innerHTML = originalText;
             copyResultBtn.style.background = '';
@@ -178,7 +236,7 @@ async function copyResult() {
 function openResult() {
     const data = resultText.textContent;
     const type = resultTypeText.textContent;
-    
+
     if (type === 'URL') {
         window.open(data, '_blank');
     } else if (type === 'Email') {
@@ -191,7 +249,7 @@ function openResult() {
 // Switch Camera
 async function switchCamera() {
     currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-    
+
     try {
         await startCamera();
         if (!scanning && !resultSection.classList.contains('show')) {
@@ -208,7 +266,7 @@ async function switchCamera() {
 // Show Error
 function showError(error) {
     errorSection.classList.remove('hidden');
-    
+
     if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
         errorMessage.textContent = 'Camera access was denied. Please allow camera permissions in your browser settings.';
     } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
@@ -231,6 +289,8 @@ closeResultBtn.addEventListener('click', closeResult);
 copyResultBtn.addEventListener('click', copyResult);
 openResultBtn.addEventListener('click', openResult);
 switchCameraBtn.addEventListener('click', switchCamera);
+uploadBtn.addEventListener('click', () => imageInput.click());
+imageInput.addEventListener('change', handleImageUpload);
 retryBtn.addEventListener('click', retryCamera);
 
 // Cleanup on page unload
