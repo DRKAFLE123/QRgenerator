@@ -85,6 +85,9 @@
         <div class="nav-brand">
             <i class="fa-solid fa-shield-halved"></i> Admin Dashboard
         </div>
+        <div class="nav-center">
+            QR Code Generator
+        </div>
         <div class="nav-user">
             <span>{{ Auth::user()->name }}</span>
             <form action="{{ route('admin.logout') }}" method="POST" style="display: inline;">
@@ -97,41 +100,55 @@
     </nav>
 
     <div class="container">
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card blue active" onclick="filterBy('total', this)">
-                <div class="icon"><i class="fa-solid fa-qrcode"></i></div>
-                <div class="info">
-                    <h3 id="stat-total">{{ $stats['total'] }}</h3>
-                    <p>Total Bio Pages</p>
+        <!-- Stats Sections -->
+        <div class="stats-container">
+            <!-- Top Section: Total -->
+            <div class="stats-hero">
+                <div class="stat-card hero-card active" onclick="filterBy('total', this)">
+                    <div class="icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <div class="info">
+                        <h3 id="stat-total">{{ $stats['total'] }}</h3>
+                        <p>Total Bio Pages</p>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card green" onclick="filterBy('active', this)">
-                <div class="icon"><i class="fa-solid fa-circle-check"></i></div>
-                <div class="info">
-                    <h3 id="stat-active">{{ $stats['active'] }}</h3>
-                    <p>Active</p>
+
+            <!-- Bottom Section: Filters -->
+            <div class="stats-grid">
+                <div class="stat-card green" onclick="filterBy('active', this)">
+                    <div class="icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="info">
+                        <h3 id="stat-active">{{ $stats['active'] }}</h3>
+                        <p>Active</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card orange" onclick="filterBy('inactive', this)">
-                <div class="icon"><i class="fa-solid fa-circle-pause"></i></div>
-                <div class="info">
-                    <h3 id="stat-inactive">{{ $stats['inactive'] }}</h3>
-                    <p>Inactive</p>
+                <div class="stat-card orange" onclick="filterBy('inactive', this)">
+                    <div class="icon"><i class="fa-solid fa-circle-pause"></i></div>
+                    <div class="info">
+                        <h3 id="stat-inactive">{{ $stats['inactive'] }}</h3>
+                        <p>Inactive</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card success" onclick="filterBy('paid', this)">
-                <div class="icon"><i class="fa-solid fa-coins"></i></div>
-                <div class="info">
-                    <h3 id="stat-paid">{{ $stats['paid'] }}</h3>
-                    <p>Paid</p>
+                <div class="stat-card success" onclick="filterBy('paid', this)">
+                    <div class="icon"><i class="fa-solid fa-coins"></i></div>
+                    <div class="info">
+                        <h3 id="stat-paid">{{ $stats['paid'] }}</h3>
+                        <p>Paid</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card danger" onclick="filterBy('unpaid', this)">
-                <div class="icon"><i class="fa-solid fa-circle-exclamation"></i></div>
-                <div class="info">
-                    <h3 id="stat-unpaid">{{ $stats['unpaid'] }}</h3>
-                    <p>Unpaid</p>
+                <div class="stat-card danger" onclick="filterBy('unpaid', this)">
+                    <div class="icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+                    <div class="info">
+                        <h3 id="stat-unpaid">{{ $stats['unpaid'] }}</h3>
+                        <p>Unpaid</p>
+                    </div>
+                </div>
+                <div class="stat-card warning" onclick="filterBy('expiring', this)">
+                    <div class="icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="info">
+                        <h3 id="stat-expiring">{{ $stats['expiring_soon'] }}</h3>
+                        <p>Expiring Soon</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,6 +186,7 @@
                             </th>
                             <th>Organization</th>
                             <th>Created Date</th>
+                            <th>Expiry Date</th>
                             <th>Status</th>
                             <th>Payment</th>
                             <th>Actions</th>
@@ -192,6 +210,50 @@
             <button class="btn-bulk-delete" onclick="confirmBulkDelete()">
                 <i class="fa-solid fa-trash"></i> Delete Selected
             </button>
+        </div>
+    </div>
+
+    <!-- Custom Expiry Modal -->
+    <div id="expiryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: #F08C00;">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <h2>Set Expiry Date</h2>
+            <p>Update expiry for <strong id="expiryOrgName"></strong></p>
+            <div class="form-group" style="margin-bottom: 2rem; text-align: left;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Choose Expiry Date</label>
+                <input type="date" id="customExpiryDate" class="date-input" style="width: 100%; padding: 0.8rem;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeExpiryModal()">Cancel</button>
+                <button class="btn-confirm" onclick="saveCustomExpiry()" style="background: #667eea;">Save
+                    Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Renewal Modal -->
+    <div id="renewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: #667eea;">
+                <i class="fa-solid fa-calendar-plus"></i>
+            </div>
+            <h2>Renew Subscription</h2>
+            <p>Extend the subscription for <strong id="renewOrgName"></strong></p>
+            <div class="renewal-options" style="margin-bottom: 2rem;">
+                <button class="btn-renew-option" onclick="executeRenewal(180)">
+                    <span class="days">180 Days</span>
+                    <span class="desc">6 Months Subscription</span>
+                </button>
+                <button class="btn-renew-option" onclick="executeRenewal(365)">
+                    <span class="days">365 Days</span>
+                    <span class="desc">1 Year Subscription</span>
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeRenewModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -299,7 +361,7 @@
             currentStatus = '';
             currentPayment = '';
 
-            if (type === 'active' || type === 'inactive') {
+            if (type === 'active' || type === 'inactive' || type === 'expiring') {
                 currentStatus = type;
             } else if (type === 'paid' || type === 'unpaid') {
                 currentPayment = type;
@@ -343,6 +405,9 @@
             document.getElementById('stat-inactive').innerText = stats.inactive;
             document.getElementById('stat-paid').innerText = stats.paid;
             document.getElementById('stat-unpaid').innerText = stats.unpaid;
+            if (document.getElementById('stat-expiring')) {
+                document.getElementById('stat-expiring').innerText = stats.expiring_soon;
+            }
         }
 
         // Status Toggle
@@ -402,6 +467,103 @@
                 .catch(error => {
                     console.error('Error:', error);
                     showToast('Failed to update payment status', 'error');
+                });
+        }
+
+        // Renewal Modal Functions
+        let renewId = null;
+
+        function openRenewModal(id, name) {
+            renewId = id;
+            document.getElementById('renewOrgName').innerText = name;
+            document.getElementById('renewModal').style.display = 'block';
+        }
+
+        function closeRenewModal() {
+            document.getElementById('renewModal').style.display = 'none';
+            renewId = null;
+        }
+
+        function executeRenewal(days) {
+            if (!renewId) return;
+
+            fetch(`/admin/bio/${renewId}/renew`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ days: days })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Renewal failed');
+                    return response.json();
+                })
+                .then(data => {
+                    showToast(data.message);
+                    if (data.stats) updateStats(data.stats);
+                    fetchData(); // Refresh table
+                    closeRenewModal();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Failed to renew subscription', 'error');
+                });
+        }
+
+        // Custom Expiry Modal Functions
+        let editExpiryId = null;
+
+        function openExpiryModal(id, name, currentDate) {
+            editExpiryId = id;
+            document.getElementById('expiryOrgName').innerText = name;
+            if (currentDate) {
+                // currentDate might be like "Dec 27, 2025" or a raw timestamp.
+                // We'll try to parse it or just leave empty if it's not ISO format.
+                // Actually, it's better to pass the raw date from the template.
+                document.getElementById('customExpiryDate').value = currentDate;
+            }
+            document.getElementById('expiryModal').style.display = 'block';
+        }
+
+        function closeExpiryModal() {
+            document.getElementById('expiryModal').style.display = 'none';
+            editExpiryId = null;
+        }
+
+        function saveCustomExpiry() {
+            if (!editExpiryId) return;
+            const newDate = document.getElementById('customExpiryDate').value;
+
+            if (!newDate) {
+                showToast('Please select a valid date', 'error');
+                return;
+            }
+
+            fetch(`/admin/bio/${editExpiryId}/expiry`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    _method: 'PATCH',
+                    expiry_date: newDate
+                })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Update failed');
+                    return response.json();
+                })
+                .then(data => {
+                    showToast(data.message);
+                    if (data.stats) updateStats(data.stats);
+                    fetchData(); // Refresh table
+                    closeExpiryModal();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Failed to update expiry date', 'error');
                 });
         }
 
@@ -569,29 +731,29 @@
         // Client-side PNG Download (Bypasses server Imagick requirement)
         function downloadPng(id, name) {
             const url = `/admin/bio/${id}/download-qr`;
-            
+
             fetch(url)
                 .then(response => response.text())
                 .then(svgContent => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     const img = new Image();
-                    
+
                     // Cleanup SVG for Image loading
-                    const blob = new Blob([svgContent], {type: 'image/svg+xml'});
+                    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
                     const url = URL.createObjectURL(blob);
-                    
-                    img.onload = function() {
+
+                    img.onload = function () {
                         // Set canvas to high res
                         canvas.width = 1000;
                         canvas.height = 1000;
-                        
+
                         // Fill white background (transparent SVG -> black PNG issue)
                         ctx.fillStyle = "#FFFFFF";
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        
+
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
+
                         // Download
                         const a = document.createElement('a');
                         a.download = `qr-${name}.png`;
@@ -599,13 +761,13 @@
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        
+
                         URL.revokeObjectURL(url);
-                        
+
                         showToast('QR Code downloaded as PNG', 'success');
                     };
-                    
-                    img.onerror = function() {
+
+                    img.onerror = function () {
                         showToast('Failed to convert QR to PNG', 'error');
                     };
 
