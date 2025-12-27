@@ -124,7 +124,9 @@ async function createBioPage() {
         const result = await response.json();
 
         // Generate QR for the Bio Page URL
-        generateQRForUrl(result.bio_url, color, bgColor);
+        await generateQRForUrl(result.bio_url, color, bgColor);
+        showNotification('Bio Page created successfully! ✨');
+
 
     } catch (error) {
         console.error(error);
@@ -277,6 +279,8 @@ async function generateQR() {
         img.src = result.qr_image;
         img.style.display = 'block';
         document.getElementById('qr-placeholder').style.display = 'none';
+        showNotification('QR Code generated successfully! 🚀');
+
 
     } catch (error) {
         console.error(error);
