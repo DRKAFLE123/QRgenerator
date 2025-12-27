@@ -13,6 +13,8 @@ A modern, feature-rich QR code generator with support for multiple QR types, cus
 - **Customization**: Custom colors for foreground and background
 - **Instant Preview**: Real-time QR code generation and preview
 - **Download & Copy**: Export QR codes as PNG/SVG or copy to clipboard
+- **Smart Validation**: Real-time validation for URLs, Emails, and Phone numbers
+- **Notifications**: Toast notifications for success and error feedback
 
 ### Admin Dashboard (New!)
 - **Statistics Overview**: Centered "Total Bio Pages" count and categorized breakdown (Active, Paid, Expiring, etc.).
