@@ -22,3 +22,14 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+error.txt
+error.json
+response.json
+debug_autoload.php
+error.txt
+*.txt
+*.json
+!composer.json
+!package.json
+!tsconfig.json
+!*.md
