@@ -10,13 +10,25 @@ use Illuminate\Support\Facades\Storage;
 
 class BioPageController extends Controller
 {
+    private function generatePermalink($name)
+    {
+        $slug = Str::slug($name);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (DB::table('bio_pages')->where('permalink', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string',
-            'links' => 'required|string', // Changed to string because FormData sends stringified JSON or individual fields. Wait, FormData sends strings.
-            // Actually, if using FormData, 'links' might be sent as JSON string or array.
-            // If frontend sends `links: [...]` via FormData, it's tricky. Best to send `links` as JSON string.
+            'links' => 'required|string',
             'color' => 'nullable|string',
             'bg_color' => 'nullable|string',
             'theme' => 'nullable|string|in:modern,vibrant,business',
@@ -26,6 +38,9 @@ class BioPageController extends Controller
         ]);
 
         $id = Str::uuid()->toString();
+
+        // Generate Permalinks
+        $permalink = $this->generatePermalink($validated['name']);
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
@@ -37,13 +52,9 @@ class BioPageController extends Controller
             $coverPath = $request->file('cover')->store('uploads/covers', 'public');
         }
 
-        // Decode links if it's a JSON string, ensuring it's stored correctly.
-        // If it came as valid JSON string, we can just store it directly or decode/encode to be safe.
-        // Let's assume frontend sends a JSON string for links.
         $linksInput = $request->input('links');
-        // valid json check? 
         if (is_string($linksInput)) {
-            $links = $linksInput; // store as is, assuming valid json
+            $links = $linksInput;
         } else {
             $links = json_encode($linksInput);
         }
@@ -51,6 +62,7 @@ class BioPageController extends Controller
         DB::table('bio_pages')->insert([
             'id' => $id,
             'name' => $validated['name'],
+            'permalink' => $permalink,
             'links' => $links,
             'color' => $validated['color'] ?? '#FF6B6B',
             'bg_color' => $validated['bg_color'] ?? '#F8F9FA',
@@ -58,19 +70,26 @@ class BioPageController extends Controller
             'logo_path' => $logoPath,
             'cover_path' => $coverPath,
             'website' => $validated['website'] ?? null,
+            'status' => 'active', // Default to active
+            'payment_status' => 'unpaid', // Default to unpaid
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         return response()->json([
             'bio_id' => $id,
-            'bio_url' => url('/bio/' . $id)
+            'bio_url' => url('/biopage/' . $permalink)
         ]);
     }
 
     public function show($id)
     {
-        $page = DB::table('bio_pages')->find($id);
+        // Try to find by permalink first, then by ID
+        $page = DB::table('bio_pages')->where('permalink', $id)->first();
+
+        if (!$page) {
+            $page = DB::table('bio_pages')->find($id);
+        }
 
         if (!$page) {
             abort(404, 'Bio Page not found');
@@ -81,13 +100,25 @@ class BioPageController extends Controller
             abort(404, 'Bio Page is currently inactive');
         }
 
+        // Log Analytics
+        try {
+            DB::table('bio_page_analytics')->insert([
+                'bio_page_id' => $page->id,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            // Silently fail logging to avoid breaking the page
+        }
+
         $links = json_decode($page->links, true);
         $theme = $page->theme ?? 'modern';
         $viewName = 'bio-page-' . $theme;
 
-        // Fallback if view doesn't exist (though we will create them)
         if (!view()->exists($viewName)) {
-            $viewName = 'bio-page'; // Fallback to original if needed, or default modern
+            $viewName = 'bio-page';
         }
 
         return view($viewName, [

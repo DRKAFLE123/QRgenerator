@@ -139,13 +139,36 @@
 
         <div class="grid-links">
             @foreach($links as $link)
-                @php $icon = "fa-brands fa-{$link['platform']}";
-                    if ($link['platform'] == 'website')
-                $icon = "fa-solid fa-globe"; @endphp
-                <a href="{{ $link['url'] }}" target="_blank" class="grid-link">
-                    <i class="{{ $icon }}"></i>
-                    <span>{{ ucfirst($link['platform']) }}</span>
-                </a>
+                @if(($link['platform'] ?? '') === 'text')
+                    <div class="grid-link"
+                        style="grid-column: 1 / -1; display: block; cursor: default; pointer-events: none; border-left: 4px solid var(--primary);">
+                        <p style="margin: 0; white-space: pre-wrap; font-size: 0.95rem; color: #555;">{{ $link['url'] }}</p>
+                    </div>
+                @else
+                    @php
+                        $platform = $link['platform'] ?? 'website';
+                        $url = $link['url'];
+                        $label = ucfirst($platform);
+                        $icon = "fa-brands fa-{$platform}";
+                        $target = "_blank";
+
+                        if ($platform === 'website') {
+                            $icon = "fa-solid fa-globe";
+                        } elseif ($platform === 'phone') {
+                            $icon = "fa-solid fa-phone";
+                            $url = "tel:" . $link['url'];
+                            $target = "_self";
+                        } elseif ($platform === 'sms') {
+                            $icon = "fa-solid fa-comment-sms";
+                            $url = "sms:" . $link['url'];
+                            $target = "_self";
+                        }
+                    @endphp
+                    <a href="{{ $url }}" target="{{ $target }}" class="grid-link">
+                        <i class="{{ $icon }}"></i>
+                        <span>{{ $label }}</span>
+                    </a>
+                @endif
             @endforeach
         </div>
     </div>

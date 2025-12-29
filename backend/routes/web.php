@@ -24,12 +24,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/bio/{id}/payment', [AdminDashboardController::class, 'updatePayment'])->name('admin.bio.payment');
     Route::post('/bio/{id}/renew', [AdminDashboardController::class, 'renewSubscription'])->name('admin.bio.renew');
     Route::patch('/bio/{id}/expiry', [AdminDashboardController::class, 'updateExpiry'])->name('admin.bio.update-expiry');
+    Route::post('/bio/{id}/update', [AdminDashboardController::class, 'updateContent'])->name('admin.bio.update-content');
     Route::delete('/bio/{id}', [AdminDashboardController::class, 'destroy'])->name('admin.bio.delete');
     Route::post('/bio/bulk-delete', [AdminDashboardController::class, 'bulkDestroy'])->name('admin.bio.bulk-delete');
     Route::get('/bio/{id}/download-qr', [AdminDashboardController::class, 'downloadQr'])->name('admin.bio.download-qr');
+    Route::get('/bio/{id}/analytics', [AdminDashboardController::class, 'getAnalytics'])->name('admin.bio.analytics');
+    Route::get('/bio/{id}/analytics/export', [AdminDashboardController::class, 'exportAnalytics'])->name('admin.bio.analytics.export');
 });
 
 // API Routes
 Route::post('/api/generate-qr', [QrController::class, 'generate']);
 Route::post('/api/create-bio', [BioPageController::class, 'store']); // Create Bio Page
-Route::get('/bio/{id}', [BioPageController::class, 'show']); // View Bio Page
+Route::get('/bio/{id}', [BioPageController::class, 'show']); // View Bio Page (Legacy/ID)
+Route::get('/biopage/{id}', [BioPageController::class, 'show']); // View Bio Page (Vanity URL)

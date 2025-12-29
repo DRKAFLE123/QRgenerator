@@ -8,7 +8,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/css/admin.css">
     <style>
         /* Modal Styles */
         .modal {
@@ -34,6 +35,28 @@
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             text-align: center;
+            position: relative;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #636E72;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: #2D3436;
         }
 
         .modal-icon {
@@ -184,6 +207,7 @@
                                 <input type="checkbox" id="selectAll" class="custom-checkbox"
                                     onchange="toggleSelectAll()">
                             </th>
+                            <th>No.</th>
                             <th>Organization</th>
                             <th>Created Date</th>
                             <th>Expiry Date</th>
@@ -259,16 +283,112 @@
 
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-icon">
-                <i class="fa-solid fa-circle-exclamation"></i>
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-icon warning" style="color: #ff6b6b;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h2>Delete Bio Page?</h2>
-            <p>Are you sure you want to delete this Bio Page? This action cannot be undone and will permanently remove
-                all associated data.</p>
+            <p style="color: #636E72; margin-bottom: 1.5rem;">
+                This action will <strong>ARCHIVE</strong> the Bio Page. It can be restored later if needed, but the QR
+                Code will stop working immediately.
+            </p>
+
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-                <button class="btn-confirm" id="confirmDeleteBtn">Delete Project</button>
+                <button class="btn-confirm delete" id="confirmDeleteBtn"
+                    style="background-color: #ff6b6b; color: white;">Archive Bio
+                    Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bio Page Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content" style="max-width: 600px; text-align: left;">
+            <div class="modal-icon" style="color: #2196f3; font-size: 2.5rem; text-align: center;">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <h2 style="text-align: center;">Edit Bio Page</h2>
+            <p style="text-align: center;">Update content for <strong id="editOrgNameDisplay"></strong></p>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Organization Name</label>
+                <input type="text" id="editOrgName" class="form-input"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Main Website (Optional)</label>
+                <input type="url" id="editWebsite" class="form-input"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Update Logo</label>
+                    <input type="file" id="editLogo" accept="image/*" class="form-input"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Update Cover</label>
+                    <input type="file" id="editCover" accept="image/*" class="form-input"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Theme</label>
+                <select id="editTheme" class="form-input"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="modern">Modern</option>
+                    <option value="vibrant">Vibrant</option>
+                    <option value="business">Business</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Links & Content</label>
+                <div id="editLinksContainer"
+                    style="max-height: 300px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
+                    <!-- Links will be added here -->
+                </div>
+                <button onclick="addEditLinkRow()"
+                    style="background: #e3f2fd; color: #2196f3; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    <i class="fa-solid fa-plus"></i> Add Link
+                </button>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-confirm" onclick="saveEditContent()" style="background: #2196f3;">Save
+                    Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analyticsModal" class="modal">
+        <div class="modal-content" style="max-width: 700px; text-align: left; position: relative;">
+            <a id="exportAnalyticsBtnTop" href="#" class="btn-icon" title="Export CSV"
+                style="position: absolute; top: 15px; right: 55px; background: #10B981; color: white; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 16px;">
+                <i class="fa-solid fa-download"></i>
+            </a>
+            <button onclick="closeAnalyticsModal()" class="modal-close-btn">&times;</button>
+            <div class="modal-icon" style="color: #6C5CE7; font-size: 2.5rem; text-align: center;">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <h2 style="text-align: center;">Bio Page Analytics</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Stats for <strong id="analyticsNameDisplay"></strong>
+            </p>
+
+            <div style="text-align: center; margin-bottom: 30px;">
+                <span style="font-size: 1.2rem; color: #636E72;">Total Visits:</span>
+                <strong id="analyticsTotalDisplay"
+                    style="font-size: 2rem; color: #2D3436; margin-left: 10px;">0</strong>
+            </div>
+
+            <div style="height: 300px; position: relative;">
+                <canvas id="analyticsChart"></canvas>
             </div>
         </div>
     </div>
@@ -309,12 +429,10 @@
         }
 
         // Check for session messages on load
-        @if(session('success'))
-            showToast("{{ session('success') }}", 'success');
+        @if(session('success'))         showToast("{{ session('success') }}", 'success');
         @endif
 
-        @if(session('error'))
-            showToast("{{ session('error') }}", 'error');
+        @if(session('error'))         showToast("{{ session('error') }}", 'error');
         @endif
 
         // Check for client-side storage messages (e.g. after reload)
@@ -575,22 +693,8 @@
 
         function closeModal() {
             document.getElementById('deleteModal').style.display = 'none';
-            deleteId = null;
-            // Reset modal title and button to default single delete state
-            document.getElementById('deleteModal').querySelector('h2').innerText = 'Delete Bio Page?';
-            document.getElementById('deleteModal').querySelector('p').innerText = 'Are you sure you want to delete this Bio Page? This action cannot be undone and will permanently remove all associated data.';
+            deleteId = null;  // Reset bulk handler (if any) to default or just clear onclick
             const confirmBtn = document.getElementById('confirmDeleteBtn');
-            confirmBtn.onclick = null; // Remove standard handler (it's added via addEventListener below, but we need to ensure bulk handler is gone)
-            // Wait, we attached bulk handler via .onclick property which overrides. 
-            // BUT the original single delete is via addEventListener.
-            // So if we set .onclick = null, the addEventListener one should still be there? 
-            // NO, addEventListener is separate. 
-            // ISSUE: If we set onclick, both might fire? 
-            // Better approach: Use a single currentAction variable or clean up handlers.
-
-            // Fix: Let's make sure the single delete event listener checks for `deleteId`. 
-            // The bulk delete handler is directly assigned to onclick. 
-            // We should clear the onclick so it doesn't fire for single deletes.
             confirmBtn.onclick = null;
         }
 
@@ -601,18 +705,28 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({ _method: 'DELETE' })
             })
-                .then(response => {
-                    if (response.ok) {
-                        sessionStorage.setItem('toastMessage', 'Bio Page deleted successfully');
-                        window.location.reload();
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message || 'Bio Page archived successfully');
+                        if (data.stats) updateStats(data.stats);
+                        fetchData(); // Refresh table
+                        closeModal();
                     } else {
-                        showToast('Failed to delete page', 'error');
+                        showToast(data.message || 'Failed to delete page', 'error');
                         closeModal();
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('An error occurred', 'error');
+                    closeModal();
                 });
         });
 
@@ -675,6 +789,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({ ids: selectedIds })
@@ -684,17 +800,13 @@
                     if (data.success) {
                         showToast(data.message);
                         if (data.stats) updateStats(data.stats);
-
-                        // Refresh table content (or remove rows locally)
-                        // For simplicity, let's reload the table data via AJAX like search
                         fetchData();
-
-                        // Reset UI
                         document.getElementById('selectAll').checked = false;
                         document.getElementById('bulkActionBar').classList.remove('show');
                         closeModal();
                     } else {
-                        showToast('Failed to delete selected pages', 'error');
+                        showToast(data.message || 'Failed to delete selected pages', 'error');
+                        closeModal();
                     }
                 })
                 .catch(error => {
@@ -780,6 +892,207 @@
         }
 
 
+        // Edit Modal Functions
+        let editId = null;
+
+        function openEditModal(page) {
+            editId = page.id;
+            document.getElementById('editOrgName').value = page.name;
+            document.getElementById('editWebsite').value = page.website || '';
+            document.getElementById('editTheme').value = page.theme || 'modern';
+
+            // Clear and Populate Links
+            const container = document.getElementById('editLinksContainer');
+            container.innerHTML = '';
+
+            let links = [];
+            try {
+                // page.links is likely a JSON string if not cast in model
+                links = typeof page.links === 'string' ? JSON.parse(page.links) : page.links;
+            } catch (e) { links = []; }
+
+            links.forEach(link => addEditLinkRow(link));
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editId = null;
+        }
+
+        function addEditLinkRow(data = { platform: 'website', url: '' }) {
+            const container = document.getElementById('editLinksContainer');
+            const row = document.createElement('div');
+            row.className = 'edit-link-row';
+            row.style.display = 'flex';
+            row.style.gap = '10px';
+            row.style.marginBottom = '10px';
+
+            const platforms = [
+                { val: 'website', label: 'Website' },
+                { val: 'facebook', label: 'Facebook' },
+                { val: 'instagram', label: 'Instagram' },
+                { val: 'twitter', label: 'Twitter' },
+                { val: 'linkedin', label: 'LinkedIn' },
+                { val: 'youtube', label: 'YouTube' },
+                { val: 'tiktok', label: 'TikTok' },
+                { val: 'whatsapp', label: 'WhatsApp' },
+                { val: 'phone', label: 'Phone' },
+                { val: 'sms', label: 'SMS' },
+                { val: 'text', label: 'Plain Text' }
+            ];
+
+            let optionsHtml = '';
+            platforms.forEach(p => {
+                optionsHtml += `<option value="${p.val}" ${data.platform === p.val ? 'selected' : ''}>${p.label}</option>`;
+            });
+
+            row.innerHTML = `
+                <select class="form-input edit-platform" style="flex:1; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                    ${optionsHtml}
+                </select>
+                <input type="text" class="form-input edit-url" value="${data.url}" placeholder="URL / Number / Text" style="flex:2; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#ff6b6b; color:white; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+
+            // Auto-scroll to bottom
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 10);
+        }
+
+        function saveEditContent() {
+            if (!editId) return;
+
+            const name = document.getElementById('editOrgName').value;
+            const website = document.getElementById('editWebsite').value;
+            const theme = document.getElementById('editTheme').value;
+            const logoFile = document.getElementById('editLogo').files[0];
+            const coverFile = document.getElementById('editCover').files[0];
+
+            const links = [];
+            document.querySelectorAll('.edit-link-row').forEach(row => {
+                const platform = row.querySelector('.edit-platform').value;
+                const url = row.querySelector('.edit-url').value;
+                if (url) links.push({ platform, url });
+            });
+
+            // Use FormData for file uploads
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('website', website);
+            formData.append('theme', theme);
+            formData.append('links', JSON.stringify(links));
+
+            if (logoFile) formData.append('logo', logoFile);
+            if (coverFile) formData.append('cover', coverFile);
+
+            fetch(`/admin/bio/${editId}/update`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                    // Content-Type is auto-set for FormData
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message);
+                        fetchData();
+                        closeEditModal();
+                    } else {
+                        showToast('Update failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    showToast('Error updating content', 'error');
+                });
+        }
+
+        // Analytics Functions
+        let analyticsChart = null;
+
+        function openAnalyticsModal(id, name) {
+            document.getElementById('analyticsNameDisplay').textContent = name;
+            document.getElementById('analyticsModal').style.display = 'block';
+
+            // Set export link
+            document.getElementById('exportAnalyticsBtnTop').href = `/admin/bio/${id}/analytics/export`;
+
+            // Fetch analytics data
+            fetch(`/admin/bio/${id}/analytics`, {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('analyticsTotalDisplay').textContent = data.total_visits;
+
+                        // Prepare chart data
+                        const labels = data.chart_data.map(item => item.date);
+                        const values = data.chart_data.map(item => item.count);
+
+                        // Destroy existing chart if any
+                        if (analyticsChart) {
+                            analyticsChart.destroy();
+                        }
+
+                        // Create chart
+                        const ctx = document.getElementById('analyticsChart').getContext('2d');
+                        analyticsChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Visits',
+                                    data: values,
+                                    borderColor: '#6C5CE7',
+                                    backgroundColor: 'rgba(108, 92, 231, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        showToast('Failed to load analytics', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    showToast('Error loading analytics', 'error');
+                });
+        }
+
+        function closeAnalyticsModal() {
+            document.getElementById('analyticsModal').style.display = 'none';
+            if (analyticsChart) {
+                analyticsChart.destroy();
+                analyticsChart = null;
+            }
+        }
     </script>
 </body>
 

@@ -156,14 +156,35 @@
 
         <div class="links">
             @foreach($links as $link)
-                @php
-                    $icon = "fa-brands fa-{$link['platform']}";
-                    if ($link['platform'] == 'website')
-                        $icon = "fa-solid fa-globe";
-                @endphp
-                <a href="{{ $link['url'] }}" target="_blank" class="link-btn">
-                    <i class="{{ $icon }}"></i> {{ ucfirst($link['platform']) }}
-                </a>
+                @if(($link['platform'] ?? '') === 'text')
+                    <div class="link-btn"
+                        style="cursor: default; background: rgba(0,0,0,0.03); border: none; box-shadow: none; display: block; text-align: left; padding: 15px;">
+                        <p style="margin: 0; font-weight: 400; line-height: 1.5; white-space: pre-wrap;">{{ $link['url'] }}</p>
+                    </div>
+                @else
+                    @php
+                        $platform = $link['platform'] ?? 'website';
+                        $url = $link['url'];
+                        $label = ucfirst($platform);
+                        $icon = "fa-brands fa-{$platform}";
+                        $target = "_blank";
+
+                        if ($platform === 'website') {
+                            $icon = "fa-solid fa-globe";
+                        } elseif ($platform === 'phone') {
+                            $icon = "fa-solid fa-phone";
+                            $url = "tel:" . $link['url'];
+                            $target = "_self";
+                        } elseif ($platform === 'sms') {
+                            $icon = "fa-solid fa-comment-sms";
+                            $url = "sms:" . $link['url'];
+                            $target = "_self";
+                        }
+                    @endphp
+                    <a href="{{ $url }}" target="{{ $target }}" class="link-btn">
+                        <i class="{{ $icon }}"></i> {{ $label }}
+                    </a>
+                @endif
             @endforeach
         </div>
 

@@ -85,7 +85,8 @@ function addBioLink() {
     row.className = 'bio-link-row';
 
     row.innerHTML = `
-        <select class="bio-platform">
+        <select class="bio-platform" onchange="updateBioLinkInput(this)">
+            <option value="website">Website</option>
             <option value="facebook">Facebook</option>
             <option value="instagram">Instagram</option>
             <option value="twitter">Twitter</option>
@@ -93,7 +94,9 @@ function addBioLink() {
             <option value="youtube">YouTube</option>
             <option value="tiktok">TikTok</option>
             <option value="whatsapp">WhatsApp</option>
-            <option value="website">Website</option>
+            <option value="phone">Phone</option>
+            <option value="sms">SMS</option>
+            <option value="text">Plain Text</option>
         </select>
         <input type="text" class="bio-url" placeholder="URL or Username">
         <button class="remove-link-btn" onclick="this.parentElement.remove()">
@@ -102,6 +105,22 @@ function addBioLink() {
     `;
 
     container.appendChild(row);
+}
+
+function updateBioLinkInput(select) {
+    const input = select.nextElementSibling;
+    const type = select.value;
+
+    if (type === 'phone' || type === 'sms') {
+        input.placeholder = 'Phone Number (e.g. +1234567890)';
+        input.type = 'tel';
+    } else if (type === 'text') {
+        input.placeholder = 'Enter your text here...';
+        input.type = 'text';
+    } else {
+        input.placeholder = 'URL or Username';
+        input.type = 'text';
+    }
 }
 
 async function createBioPage() {
@@ -134,12 +153,14 @@ async function createBioPage() {
     });
 
     if (links.length === 0) {
-        showNotification('Please add at least one social link', 'error');
+        showNotification('Please add at least one link or text block', 'error');
         return;
     }
 
     // Validate social links
     for (const link of links) {
+        if (['text', 'phone', 'sms'].includes(link.platform)) continue;
+
         if (link.platform === 'website' && !isValidURL(link.url)) {
             showNotification(`Invalid URL for Website link`, 'error');
             return;

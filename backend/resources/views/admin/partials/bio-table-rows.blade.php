@@ -1,8 +1,11 @@
-@forelse($bioPages as $page)
+@forelse($bioPages as $index => $page)
     <tr>
         <td class="checkbox-cell">
             <input type="checkbox" class="row-checkbox custom-checkbox" value="{{ $page->id }}"
                 onchange="updateBulkState()">
+        </td>
+        <td style="font-weight: 500; color: #636E72;">
+            {{ ($bioPages->currentPage() - 1) * $bioPages->perPage() + $loop->iteration }}
         </td>
         <td>
             <div class="org-cell">
@@ -16,7 +19,7 @@
                 <span class="org-name">{{ $page->name }}</span>
             </div>
         </td>
-        <td>{{ \Carbon\Carbon::parse($page->created_at)->format('M d, Y') }}</td>
+        <td>{{ \Carbon\Carbon::parse($page->created_at)->format('M d, Y h:i A') }}</td>
         <td>
             @if($page->expires_at)
                 @php
@@ -56,9 +59,14 @@
         </td>
         <td>
             <div class="actions">
-                <a href="{{ url('/bio/' . $page->id) }}" target="_blank" class="btn-icon view" title="View Page">
+                <a href="{{ !empty($page->permalink) ? url('/biopage/' . $page->permalink) : url('/bio/' . $page->id) }}"
+                    target="_blank" class="btn-icon view" title="View Page">
                     <i class="fa-solid fa-link"></i>
                 </a>
+                <button onclick='openEditModal({!! json_encode($page) !!})' class="btn-icon edit" title="Edit Content"
+                    style="background: #e3f2fd; color: #2196f3;">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
                 <div class="dropdown">
                     <button class="btn-icon download" title="Download QR">
                         <i class="fa-solid fa-download"></i>
@@ -82,6 +90,10 @@
                         </a>
                     </div>
                 </div>
+                <button onclick="openAnalyticsModal('{{ $page->id }}', '{{ addslashes($page->name) }}')" class="btn-icon"
+                    title="View Analytics" style="background: #E3E8FD; color: #6C5CE7;">
+                    <i class="fa-solid fa-chart-line"></i>
+                </button>
                 <button onclick="openRenewModal('{{ $page->id }}', '{{ addslashes($page->name) }}')" class="btn-icon renew"
                     title="Renew Subscription">
                     <i class="fa-solid fa-calendar-plus"></i>
@@ -94,13 +106,20 @@
     </tr>
 @empty
     <tr>
-        <td colspan="7" style="text-align: center; padding: 2rem;">No bio pages found.</td>
+        <td colspan="8" style="text-align: center; padding: 2rem;">No bio pages found.</td>
     </tr>
 @endforelse
 <tr>
-    <td colspan="7" style="padding: 0;">
-        <div class="pagination">
-            {{ $bioPages->links('vendor.pagination.admin-custom') }}
+    <td colspan="8" style="padding: 1rem; background: #fff; border-top: 1px solid #eee;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 0.9rem; color: #636E72;">
+                Showing <strong>{{ $bioPages->firstItem() ?? 0 }}</strong> to
+                <strong>{{ $bioPages->lastItem() ?? 0 }}</strong> of <strong>{{ $bioPages->total() }}</strong> total
+                pages
+            </div>
+            <div class="pagination">
+                {{ $bioPages->links('vendor.pagination.default') }}
+            </div>
         </div>
     </td>
 </tr>

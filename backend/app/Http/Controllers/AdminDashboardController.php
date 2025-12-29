@@ -3,21 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
     private function getStats()
     {
         return [
-            'total' => DB::table('bio_pages')->count(),
-            'active' => DB::table('bio_pages')->where('status', 'active')->count(),
-            'inactive' => DB::table('bio_pages')->where('status', 'inactive')->count(),
-            'paid' => DB::table('bio_pages')->where('payment_status', 'paid')->count(),
-            'unpaid' => DB::table('bio_pages')->where('payment_status', 'unpaid')->count(),
-            'expiring_soon' => DB::table('bio_pages')
-                ->where('status', 'active')
+            'total' => \App\Models\BioPage::count(),
+            'active' => \App\Models\BioPage::where('status', 'active')->count(),
+            'inactive' => \App\Models\BioPage::where('status', 'inactive')->count(),
+            'paid' => \App\Models\BioPage::where('payment_status', 'paid')->count(),
+            'unpaid' => \App\Models\BioPage::where('payment_status', 'unpaid')->count(),
+            'expiring_soon' => \App\Models\BioPage::where('status', 'active')
                 ->whereNotNull('expires_at')
                 ->where('expires_at', '<=', Carbon::now()->addDays(7))
                 ->where('expires_at', '>', Carbon::now())
@@ -31,7 +30,7 @@ class AdminDashboardController extends Controller
         $stats = $this->getStats();
 
         // Fetch Bio Pages with search, sorting, and filters
-        $query = DB::table('bio_pages');
+        $query = \App\Models\BioPage::query();
 
         if ($request->has('search') && $request->search) {
             $search = $request->query('search');
@@ -159,17 +158,39 @@ class AdminDashboardController extends Controller
 
     public function destroy($id)
     {
-        DB::table('bio_pages')->where('id', $id)->delete();
+        $page = \App\Models\BioPage::find($id);
+
+        if (!$page) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bio Page not found. ID: ' . $id
+                ], 404);
+            }
+            return redirect()->route('admin.dashboard')->with('error', 'Bio Page not found. ID: ' . $id);
+        }
+
+        if ($page->status === 'active') {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete an active Bio Page. Please deactivate it first.'
+                ], 403);
+            }
+            return redirect()->route('admin.dashboard')->with('error', 'Cannot delete an active Bio Page.');
+        }
+
+        $page->delete(); // Soft Delete
 
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Bio Page deleted successfully',
+                'message' => 'Bio Page archived successfully',
                 'stats' => $this->getStats()
             ]);
         }
 
-        return redirect()->route('admin.dashboard')->with('success', 'Bio Page deleted successfully');
+        return redirect()->route('admin.dashboard')->with('success', 'Bio Page archived successfully');
     }
 
     public function bulkDestroy(Request $request)
@@ -179,13 +200,28 @@ class AdminDashboardController extends Controller
             'ids.*' => 'exists:bio_pages,id'
         ]);
 
-        DB::table('bio_pages')->whereIn('id', $request->ids)->delete();
+        if (request()->ajax() || request()->wantsJson()) {
+            $activeCount = \App\Models\BioPage::whereIn('id', $request->ids)
+                ->where('status', 'active')
+                ->count();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Selected pages deleted successfully',
-            'stats' => $this->getStats()
-        ]);
+            if ($activeCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete active Bio Pages. Please deactivate them first.'
+                ], 403);
+            }
+
+            \App\Models\BioPage::whereIn('id', $request->ids)->delete(); // Soft Delete
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected pages archived successfully',
+                'stats' => $this->getStats()
+            ]);
+        }
+
+        return redirect()->back()->with('error', 'Invalid request format.');
     }
 
     public function downloadQr(Request $request, $id)
@@ -197,7 +233,11 @@ class AdminDashboardController extends Controller
         }
 
         // Generate the URL for the Bio Page
-        $url = url('/bio/' . $page->id);
+        if (!empty($page->permalink)) {
+            $url = url('/biopage/' . $page->permalink);
+        } else {
+            $url = url('/bio/' . $page->id);
+        }
 
         $format = $request->query('format', 'svg');
         $allowedFormats = ['svg', 'png', 'jpeg', 'pdf'];
@@ -233,5 +273,106 @@ class AdminDashboardController extends Controller
         return response($response)
             ->header('Content-Type', $mimeTypes[$format])
             ->header('Content-Disposition', 'attachment; filename="qr-' . $page->name . '.' . $format . '"');
+    }
+    public function updateContent(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'links' => 'required|string', // JSON string
+            'theme' => 'nullable|string|in:modern,vibrant,business',
+            'website' => 'nullable|url',
+        ]);
+
+        $updateData = [
+            'name' => $request->name,
+            'links' => $request->links,
+            'theme' => $request->theme,
+            'website' => $request->website,
+            'updated_at' => Carbon::now()
+        ];
+
+        // Handle file uploads if present (optional, usually admin might not update images often, but good to have)
+        if ($request->hasFile('logo')) {
+            $updateData['logo_path'] = $request->file('logo')->store('uploads/logos', 'public');
+        }
+        if ($request->hasFile('cover')) {
+            $updateData['cover_path'] = $request->file('cover')->store('uploads/covers', 'public');
+        }
+
+        // We can also update colors if passed
+        if ($request->has('color'))
+            $updateData['color'] = $request->color;
+        if ($request->has('bg_color'))
+            $updateData['bg_color'] = $request->bg_color;
+
+        DB::table('bio_pages')->where('id', $id)->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bio Page details updated successfully',
+            'stats' => $this->getStats()
+        ]);
+    }
+    public function getAnalytics($id)
+    {
+        $totalVisits = DB::table('bio_page_analytics')->where('bio_page_id', $id)->count();
+
+        // Get visits for the last 7 days
+        $visits = DB::table('bio_page_analytics')
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->where('bio_page_id', $id)
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'total_visits' => $totalVisits,
+            'chart_data' => $visits
+        ]);
+    }
+
+    public function exportAnalytics($id)
+    {
+        $page = DB::table('bio_pages')->find($id);
+
+        if (!$page) {
+            abort(404);
+        }
+
+        $analytics = DB::table('bio_page_analytics')
+            ->where('bio_page_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'analytics-' . ($page->permalink ?? $page->id) . '-' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($analytics) {
+            $file = fopen('php://output', 'w');
+
+            // CSV Headers
+            fputcsv($file, ['Date', 'Time', 'IP Address', 'User Agent']);
+
+            // CSV Data
+            foreach ($analytics as $record) {
+                $datetime = Carbon::parse($record->created_at);
+                fputcsv($file, [
+                    $datetime->format('Y-m-d'),
+                    $datetime->format('H:i:s'),
+                    $record->ip_address ?? 'N/A',
+                    $record->user_agent ?? 'N/A'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

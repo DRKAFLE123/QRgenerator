@@ -180,15 +180,36 @@
 
         <div style="margin-top:20px;">
             @foreach($links as $link)
-                @php
-                    $icon = "fa-brands fa-{$link['platform']}";
-                    if ($link['platform'] == 'website')
-                        $icon = "fa-solid fa-globe";
-                @endphp
-                <a href="{{ $link['url'] }}" target="_blank" class="link-card">
-                    <div class="icon-box"><i class="{{ $icon }}"></i></div>
-                    <span class="link-text">{{ ucfirst($link['platform']) }}</span>
-                </a>
+                @if(($link['platform'] ?? '') === 'text')
+                    <div class="link-card"
+                        style="display: block; text-align: left; cursor: default; pointer-events: none; background: rgba(255,255,255,0.15);">
+                        <p style="margin: 0; font-size: 1rem; line-height: 1.6; white-space: pre-wrap;">{{ $link['url'] }}</p>
+                    </div>
+                @else
+                    @php
+                        $platform = $link['platform'] ?? 'website';
+                        $url = $link['url'];
+                        $label = ucfirst($platform);
+                        $icon = "fa-brands fa-{$platform}";
+                        $target = "_blank";
+
+                        if ($platform === 'website') {
+                            $icon = "fa-solid fa-globe";
+                        } elseif ($platform === 'phone') {
+                            $icon = "fa-solid fa-phone";
+                            $url = "tel:" . $link['url'];
+                            $target = "_self";
+                        } elseif ($platform === 'sms') {
+                            $icon = "fa-solid fa-comment-sms";
+                            $url = "sms:" . $link['url'];
+                            $target = "_self";
+                        }
+                    @endphp
+                    <a href="{{ $url }}" target="{{ $target }}" class="link-card">
+                        <div class="icon-box"><i class="{{ $icon }}"></i></div>
+                        <span class="link-text">{{ $label }}</span>
+                    </a>
+                @endif
             @endforeach
         </div>
     </div>

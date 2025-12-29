@@ -308,225 +308,75 @@ textarea {
 
 /* Responsive */
 @media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    .container {
+        width: 100%;
+    }
+
     .generator-card {
         grid-template-columns: 1fr;
+        border-radius: var(--border-radius);
     }
 
     .controls-section {
         border-right: none;
         border-bottom: var(--border-width) solid var(--border-color);
+        padding: 1.5rem;
     }
 
     .preview-section {
         border-left: none;
-        padding: 2rem;
-    }
-}
-
-/* --- New Styles for Bio Page Feature --- */
-
-/* Tabs */
-.mode-tabs {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    border-bottom: var(--border-width) solid var(--border-color);
-    padding-bottom: 1rem;
-}
-
-.tab-btn {
-    flex: 1;
-    padding: 0.8rem;
-    background: #F1F2F6;
-    border: 2px solid transparent;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: var(--transition);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.tab-btn:hover {
-    color: var(--text-main);
-    background: #E4E7EB;
-}
-
-.tab-btn.active {
-    color: white;
-    background: var(--text-main);
-    font-weight: 700;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Secondary Button (Add Link) */
-.secondary-btn {
-    width: 100%;
-    padding: 0.8rem;
-    background: #F8F9FA;
-    border: 2px solid #DFE6E9;
-    color: var(--text-main);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.secondary-btn:hover {
-    border-color: var(--text-main);
-    background: white;
-    transform: translateY(-2px);
-}
-
-/* Bio Link Row */
-.bio-link-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.bio-link-row select {
-    width: 140px;
-}
-
-.bio-link-row input {
-    flex: 1;
-}
-
-.remove-link-btn {
-    padding: 0 1rem;
-    background: #FFECEC;
-    color: #FF6B6B;
-    border: none;
-    cursor: pointer;
-    transition: var(--transition);
-    border-radius: var(--border-radius);
-}
-
-.remove-link-btn:hover {
-    background: #FF6B6B;
-    color: white;
-}
-
-/* Create Bio Button */
-#create-bio-btn {
-    width: 100%;
-    padding: 1rem;
-    background: var(--text-main);
-    color: white;
-    border: none;
-    font-size: 1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: var(--transition);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-#create-bio-btn:hover {
-    background: #000000;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Toast Notifications */
-.toast-container {
-    position: fixed;
-    top: 2rem;
-    right: 2rem;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    pointer-events: none;
-}
-
-.toast {
-    background: white;
-    border: 2px solid var(--text-main);
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 8px 8px 0px rgba(45, 52, 54, 0.1);
-    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: auto;
-    min-width: 300px;
-}
-
-.toast.success {
-    border-color: var(--secondary-color);
-    box-shadow: 8px 8px 0px rgba(78, 205, 196, 0.2);
-}
-
-.toast.error {
-    border-color: #FF6B6B;
-    box-shadow: 8px 8px 0px rgba(255, 107, 107, 0.2);
-}
-
-.toast i {
-    font-size: 1.25rem;
-}
-
-.toast.success i {
-    color: var(--secondary-color);
-}
-
-.toast.error i {
-    color: #FF6B6B;
-}
-
-.toast .message {
-    font-weight: 600;
-    color: var(--text-main);
-}
-
-.toast.fade-out {
-    animation: slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
+        padding: 2rem 1.5rem;
     }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    to {
-        opacity: 0;
-        transform: translateX(100%);
+    .qr-preview-container {
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+        aspect-ratio: 1;
     }
 }
 
 @media (max-width: 480px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .mode-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .customization-options {
+        flex-direction: column;
+    }
+
+    .bio-link-row {
+        flex-direction: column;
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+
+    .bio-link-row select,
+    .bio-link-row input {
+        width: 100%;
+    }
+
+    .remove-link-btn {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 5px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
     .toast-container {
         top: auto;
         bottom: 1rem;
@@ -536,5 +386,6 @@ textarea {
 
     .toast {
         min-width: auto;
+        width: 100%;
     }
 }
