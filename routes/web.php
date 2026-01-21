@@ -32,4 +32,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/bio/{id}/analytics/export', [AdminDashboardController::class, 'exportAnalytics'])->name('admin.bio.analytics.export');
 });
 
+// Bio Page View
+Route::get('/biopage/{permalink}', [BioPageController::class, 'show']);
+
 // API Routes are now in api.php

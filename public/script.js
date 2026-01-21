@@ -190,14 +190,26 @@ async function createBioPage() {
 
         const response = await fetch(BIO_API_URL, {
             method: 'POST',
-            // headers: { 'Content-Type': 'multipart/form-data' }, // standard fetch auto-sets this for FormData with boundary
+            headers: {
+                'Accept': 'application/json'
+            },
             body: formData
         });
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Server Error:', errorText);
-            throw new Error('Failed to create Bio Page: ' + errorText);
+            let errorMessage = 'Failed to create Bio Page';
+            try {
+                const errorJson = JSON.parse(errorText);
+                if (errorJson.message) errorMessage = errorJson.message;
+                if (errorJson.errors) {
+                    errorMessage = Object.values(errorJson.errors).flat().join(', ');
+                }
+            } catch (e) {
+                // If not JSON, use the raw text (truncated if too long)
+                errorMessage = errorText.substring(0, 100);
+            }
+            throw new Error(errorMessage);
         }
 
         const result = await response.json();
@@ -209,7 +221,7 @@ async function createBioPage() {
 
     } catch (error) {
         console.error(error);
-        showNotification('Error creating Bio Page', 'error');
+        showNotification(error.message || 'Error creating Bio Page', 'error');
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
@@ -227,6 +239,9 @@ async function generateQRForUrl(url, color, bgColor = '#FFFFFF') {
 
         const response = await fetch(API_URL, {
             method: 'POST',
+            headers: {
+                'Accept': 'application/json'
+            },
             body: formData
         });
 
@@ -373,6 +388,9 @@ async function generateQR() {
 
         const response = await fetch(API_URL, {
             method: 'POST',
+            headers: {
+                'Accept': 'application/json'
+            },
             body: formData
         });
 
