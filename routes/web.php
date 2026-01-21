@@ -32,8 +32,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/bio/{id}/analytics/export', [AdminDashboardController::class, 'exportAnalytics'])->name('admin.bio.analytics.export');
 });
 
-// API Routes
-Route::post('/api/generate-qr', [QrController::class, 'generate']);
-Route::post('/api/create-bio', [BioPageController::class, 'store']); // Create Bio Page
-Route::get('/bio/{id}', [BioPageController::class, 'show']); // View Bio Page (Legacy/ID)
-Route::get('/biopage/{id}', [BioPageController::class, 'show']); // View Bio Page (Vanity URL)
+// API Routes are now in api.php

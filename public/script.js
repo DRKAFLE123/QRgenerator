@@ -1,5 +1,5 @@
-const API_URL = 'http://127.0.0.1:8000/api/generate-qr';
-const BIO_API_URL = 'http://127.0.0.1:8000/api/create-bio';
+const API_URL = '/api/generate-qr';
+const BIO_API_URL = '/api/create-bio';
 
 // File Size Validation (10MB limit)
 function validateFileSize(input, errorId) {
