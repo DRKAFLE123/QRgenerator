@@ -417,14 +417,19 @@ async function generateQR() {
 
 function downloadQR() {
     const img = document.getElementById('qr-image');
-    if (!img.src) return;
+    if (!img.src) {
+        showNotification('No QR Code to download', 'error');
+        return;
+    }
 
     const link = document.createElement('a');
+    const timestamp = new Date().getTime();
+
     // Check if it's an SVG
     if (img.src.startsWith('data:image/svg+xml')) {
-        link.download = 'qrcode.svg';
+        link.download = `qrcode-${timestamp}.svg`;
     } else {
-        link.download = 'qrcode.png';
+        link.download = `qrcode-${timestamp}.png`;
     }
 
     link.href = img.src;
