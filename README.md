@@ -1,109 +1,59 @@
-# Free QR Generator
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-A modern, feature-rich QR code generator with support for multiple QR types, customizable Bio Pages, and a full Admin Dashboard for subscription management. Built with Laravel 11 backend and vanilla JavaScript frontend.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-![QR Generator](https://img.shields.io/badge/Laravel-11-red?style=flat-square&logo=laravel)
-![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
+## About Laravel
 
-## Features
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-### QR Code Generation
-- **Multiple QR Types**: URL, Text, WiFi, Email, Phone, SMS, and Social Media
-- **Social Media Support**: Facebook, Instagram, Twitter, LinkedIn, YouTube, TikTok, WhatsApp
-- **Customization**: Custom colors for foreground and background
-- **Instant Preview**: Real-time QR code generation and preview
-- **Download & Copy**: Export QR codes as PNG/SVG or copy to clipboard
-- **Smart Validation**: Real-time validation for URLs, Emails, and Phone numbers
-- **Notifications**: Toast notifications for success and error feedback
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-### Admin Dashboard (New!)
-- **Statistics Overview**: Centered "Total Bio Pages" count and categorized breakdown (Active, Paid, Expiring, etc.).
-- **User Management**: View, filter, search, and delete bio pages.
-- **Expiry Management**:
-    - **Tracking**: Integrated `expires_at` tracking for all bio pages.
-    - **Expiring Soon**: Dedicated filter and warning icons for pages expiring within 7 days.
-    - **Renewal System**: One-click renewal for 180 or 365 days.
-    - **Custom Expiry**: Interactive calendar to set precise expiry dates.
-- **Status Controls**: Toggle bio page status (Active/Inactive) and update payment status (Paid/Unpaid) instantly.
-- **Glassmorphism UI**: Premium, modern design with full mobile responsiveness.
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-### QR Scanner & Tools
-- **Image Scanner**: Upload QR code images (PNG, JPG, WEBP) to decode them instantly.
-- **Live Scanning**: Uses `jsQR` for fast browser-based QR decoding.
-- **Mobile Responsive**: Optimized view for scanning on the go.
+## Learning Laravel
 
-### Bio Page QR
-- **Multi-Link Pages**: Create a single QR code linking to multiple social profiles
-- **Three Themes**: Modern, Vibrant, and Business designs
-- **Branding**: Upload custom logo and cover image
-- **Responsive Design**: Mobile-friendly Bio Pages
-- **Custom Colors**: Personalize theme and background colors
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-## Tech Stack
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-### Backend
-- **Framework**: Laravel 11
-- **Database**: SQLite
-- **Image Processing**: PHP GD Library
-- **QR Library**: SimpleSoftwareIO/simple-qrcode
+## Laravel Sponsors
 
-### Frontend
-- **HTML5/CSS3**: Modern, responsive design (Vanilla CSS)
-- **JavaScript**: Vanilla JS (no frameworks)
-- **Decoding**: jsQR (for scanning)
-- **Icons**: Font Awesome 6.4.0
-- **Fonts**: Google Fonts (Inter, Roboto, Outfit)
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-## Installation
+### Premium Partners
 
-### Prerequisites
-- PHP 8.2 or higher (Extensions: gd, mbstring, pdo, sqlite3)
-- Composer
-- SQLite extension enabled
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-### Backend Setup
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/DRKAFLE123/QRgenerator.git
-   cd QRgenerator
-   ```
-2. **Install backend dependencies**
-   ```bash
-   cd backend
-   composer install --optimize-autoloader
-   ```
-3. **Configure environment**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-4. **Setup database**
-   ```bash
-   php artisan migrate --force
-   ```
-5. **Start the backend server**
-   ```bash
-   php artisan serve
-   ```
+## Contributing
 
-### Frontend Setup
-1. **Navigate to frontend directory**
-   ```bash
-   cd ../frontend
-   ```
-2. **Start a local server**
-   Using Python: `python -m http.server 8080`
-   Or using PHP: `php -S localhost:8080`
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Deployment (cPanel/Shared Hosting)
-1. **Upload** the project files to your server.
-2. **PHP Version**: Ensure your host uses PHP 8.2+.
-3. **Public Directory**: Set the document root for your backend domain/subdomain to the `backend/public` folder.
-4. **Permissions**: Ensure `storage` and `bootstrap/cache` are writable.
-5. **Database**: The SQLite database will be located at `backend/database/database.sqlite`. Ensure this file is writable.
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
-This project is open-source and available under the [MIT License](LICENSE).
 
----
-**Made with ❤️ by Dr. Kafle**
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
