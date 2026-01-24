@@ -173,12 +173,16 @@
                             $icon = "fa-solid fa-globe";
                         } elseif ($platform === 'phone') {
                             $icon = "fa-solid fa-phone";
-                            $url = "tel:" . $link['url'];
+                            $url = "tel:" . preg_replace('/[^0-9+]/', '', $link['url']);
                             $target = "_self";
                         } elseif ($platform === 'sms') {
                             $icon = "fa-solid fa-comment-sms";
-                            $url = "sms:" . $link['url'];
+                            $url = "sms:" . preg_replace('/[^0-9+]/', '', $link['url']);
                             $target = "_self";
+                        } elseif ($platform === 'whatsapp') {
+                            $icon = "fa-brands fa-whatsapp";
+                            $url = "https://wa.me/" . preg_replace('/[^0-9]/', '', $link['url']);
+                            $target = "_blank";
                         }
                     @endphp
                     <a href="{{ $url }}" target="{{ $target }}" class="link-btn">

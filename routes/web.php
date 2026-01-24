@@ -7,13 +7,37 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 
 Route::get('/', function () {
-    return response()->json(['message' => 'QR Code Generator API is running']);
+    return response()->file(public_path('index.html'));
 });
 
 // Admin Authentication
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+Route::get('/debug-logo', function () {
+    $files = \Illuminate\Support\Facades\Storage::disk('public')->allFiles();
+    $publicPath = public_path('storage');
+    $storagePath = storage_path('app/public');
+    $linkExists = file_exists($publicPath) ? 'Yes' : 'No';
+    $isLink = is_link($publicPath) ? 'Yes' : 'No';
+
+    // Fetch first bio page
+    $bioPage = \App\Models\BioPage::first();
+
+    return [
+        'app_url' => env('APP_URL'),
+        'asset_url_test' => asset('storage/test.txt'),
+        'public_storage_path' => $publicPath,
+        'storage_app_public_path' => $storagePath,
+        'link_exists' => $linkExists,
+        'is_link' => $isLink,
+        'bio_page_logo_path_in_db' => $bioPage ? $bioPage->logo_path : 'No BioPage Found',
+        'generated_logo_url' => $bioPage ? asset('storage/' . $bioPage->logo_path) : null,
+        'logo_file_exists_on_disk' => $bioPage ? (\Illuminate\Support\Facades\Storage::disk('public')->exists($bioPage->logo_path) ? 'Yes' : 'No') : 'N/A',
+        'files_in_public_disk_count' => count($files),
+    ];
+});
 
 Route::redirect('/admin', '/admin/login');
 
