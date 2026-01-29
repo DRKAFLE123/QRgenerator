@@ -84,20 +84,24 @@ function addBioLink() {
     const row = document.createElement('div');
     row.className = 'bio-link-row';
 
+    let optionsHtml = '';
+    // Use injected config or fallback
+    const config = window.PLATFORMS_CONFIG || {
+        'website': { label: 'Website' },
+        'facebook': { label: 'Facebook' },
+        'instagram': { label: 'Instagram' },
+        'text': { label: 'Plain Text' }
+    };
+
+    for (const [key, conf] of Object.entries(config)) {
+        optionsHtml += `<option value="${key}">${conf.label}</option>`;
+    }
+
     row.innerHTML = `
         <select class="bio-platform" onchange="updateBioLinkInput(this)">
-            <option value="website">Website</option>
-            <option value="facebook">Facebook</option>
-            <option value="instagram">Instagram</option>
-            <option value="twitter">Twitter</option>
-            <option value="linkedin">LinkedIn</option>
-            <option value="youtube">YouTube</option>
-            <option value="tiktok">TikTok</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="phone">Phone</option>
-            <option value="sms">SMS</option>
-            <option value="text">Plain Text</option>
+            ${optionsHtml}
         </select>
+        <input type="text" class="bio-label" placeholder="Label (Optional)" style="width: 140px;">
         <input type="text" class="bio-url" placeholder="URL or Username">
         <button class="remove-link-btn" onclick="this.parentElement.remove()">
             <i class="fa-solid fa-trash"></i>
@@ -110,15 +114,20 @@ function addBioLink() {
 function updateBioLinkInput(select) {
     const input = select.nextElementSibling;
     const type = select.value;
+    const config = window.PLATFORMS_CONFIG || {};
+    const selectedConfig = config[type] || {};
 
-    if (type === 'phone' || type === 'sms') {
-        input.placeholder = 'Phone Number (e.g. +1234567890)';
+    // Check config type first, then fallback to key check
+    const configType = selectedConfig.type || type;
+
+    if (configType === 'phone' || configType === 'sms') {
+        input.placeholder = selectedConfig.placeholder || 'Phone Number (e.g. +1234567890)';
         input.type = 'tel';
-    } else if (type === 'text') {
-        input.placeholder = 'Enter your text here...';
+    } else if (configType === 'text') {
+        input.placeholder = selectedConfig.placeholder || 'Enter your text here...';
         input.type = 'text';
     } else {
-        input.placeholder = 'URL or Username';
+        input.placeholder = selectedConfig.placeholder || 'URL or Username';
         input.type = 'text';
     }
 }
@@ -147,8 +156,9 @@ async function createBioPage() {
     document.querySelectorAll('.bio-link-row').forEach(row => {
         const platform = row.querySelector('.bio-platform').value;
         const url = row.querySelector('.bio-url').value;
+        const label = row.querySelector('.bio-label').value;
         if (url) {
-            links.push({ platform, url });
+            links.push({ platform, url, label });
         }
     });
 

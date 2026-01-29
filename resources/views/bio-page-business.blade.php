@@ -146,24 +146,25 @@
                     </div>
                 @else
                     @php
-                        $platform = $link['platform'] ?? 'website';
+                        $platformKey = $link['platform'] ?? 'website';
                         $url = $link['url'];
-                        $label = ucfirst($platform);
-                        $icon = "fa-brands fa-{$platform}";
+
+                        // Fallback lookup
+                        $platformData = $platforms[$platformKey] ?? $platforms['website'] ?? null;
+
+                        // Logic for label, icon, and type
+                        $label = !empty($link['label']) ? $link['label'] : ($platformData ? $platformData->label : ucfirst($platformKey));
+                        $icon = $platformData ? $platformData->icon : 'fa-solid fa-globe';
+                        $type = $platformData ? $platformData->type : 'url';
                         $target = "_blank";
 
-                        if ($platform === 'website') {
-                            $icon = "fa-solid fa-globe";
-                        } elseif ($platform === 'phone') {
-                            $icon = "fa-solid fa-phone";
+                        if ($type === 'phone') {
                             $url = "tel:" . preg_replace('/[^0-9+]/', '', $link['url']);
                             $target = "_self";
-                        } elseif ($platform === 'sms') {
-                            $icon = "fa-solid fa-comment-sms";
+                        } elseif ($type === 'sms') {
                             $url = "sms:" . preg_replace('/[^0-9+]/', '', $link['url']);
                             $target = "_self";
-                        } elseif ($platform === 'whatsapp') {
-                            $icon = "fa-brands fa-whatsapp";
+                        } elseif ($type === 'whatsapp') {
                             $url = "https://wa.me/" . preg_replace('/[^0-9]/', '', $link['url']);
                             $target = "_blank";
                         }

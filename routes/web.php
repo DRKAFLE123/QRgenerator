@@ -7,7 +7,8 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 
 Route::get('/', function () {
-    return response()->file(public_path('index.html'));
+    $platforms = \App\Models\Platform::where('is_active', true)->get();
+    return view('home', compact('platforms'));
 });
 
 // Admin Authentication
@@ -54,6 +55,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/bio/{id}/download-qr', [AdminDashboardController::class, 'downloadQr'])->name('admin.bio.download-qr');
     Route::get('/bio/{id}/analytics', [AdminDashboardController::class, 'getAnalytics'])->name('admin.bio.analytics');
     Route::get('/bio/{id}/analytics/export', [AdminDashboardController::class, 'exportAnalytics'])->name('admin.bio.analytics.export');
+
+    // Platform Management
+    Route::post('/platforms', [AdminDashboardController::class, 'storePlatform'])->name('admin.platforms.store');
+    Route::put('/platforms/{id}', [AdminDashboardController::class, 'updatePlatform'])->name('admin.platforms.update');
+    Route::delete('/platforms/{id}', [AdminDashboardController::class, 'deletePlatform'])->name('admin.platforms.delete');
 });
 
 // Bio Page View

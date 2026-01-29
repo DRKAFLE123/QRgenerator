@@ -87,13 +87,14 @@
         <div class="links-container">
             @foreach($links as $link)
                 @php
-                    $iconClass = "fa-brands fa-{$link['platform']}";
-                    if ($link['platform'] == 'website') {
-                        $iconClass = "fa-solid fa-globe";
-                    }
+                    $platformKey = $link['platform'] ?? 'website';
+                    $platformData = $platforms[$platformKey] ?? $platforms['website'] ?? null;
+
+                    $label = !empty($link['label']) ? $link['label'] : ($platformData ? $platformData->label : ucfirst($platformKey));
+                    $iconClass = $platformData ? $platformData->icon : 'fa-solid fa-globe';
                 @endphp
                 <a href="{{ $link['url'] }}" target="_blank" class="bio-link-btn">
-                    <i class="{{ $iconClass }}"></i> {{ ucfirst($link['platform']) }}
+                    <i class="{{ $iconClass }}"></i> {{ $label }}
                 </a>
             @endforeach
         </div>

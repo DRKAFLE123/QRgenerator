@@ -69,7 +69,8 @@ class AdminDashboardController extends Controller
             return view('admin.partials.bio-table-rows', compact('bioPages'))->render();
         }
 
-        return view('admin.dashboard', compact('stats', 'bioPages'));
+        $platforms = \App\Models\Platform::all();
+        return view('admin.dashboard', compact('stats', 'bioPages', 'platforms'));
     }
 
     public function updateStatus(Request $request, $id)
@@ -324,13 +325,72 @@ class AdminDashboardController extends Controller
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->groupBy('date')
             ->orderBy('date', 'asc')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        // Device Breakdown
+        $devices = DB::table('bio_page_analytics')
+            ->select('device_type', DB::raw('count(*) as count'))
+            ->where('bio_page_id', $id)
+            ->whereNotNull('device_type')
+            ->groupBy('device_type')
+            ->get();
+
+        // Top Locations (City, Country)
+        $locations = DB::table('bio_page_analytics')
+            ->select('city', 'country', DB::raw('count(*) as count'))
+            ->where('bio_page_id', $id)
+            ->whereNotNull('country')
+            ->groupBy('city', 'country')
+            ->orderByDesc('count')
+            ->limit(5)
             ->get();
 
         return response()->json([
             'success' => true,
             'total_visits' => $totalVisits,
-            'chart_data' => $visits
+            'chart_data' => $visits,
+            'device_data' => $devices,
+            'location_data' => $locations
         ]);
+    }
+
+    // --- Platform Management ---
+
+    public function storePlatform(Request $request)
+    {
+        $request->validate([
+            'key' => 'required|string|unique:platforms,key',
+            'label' => 'required|string',
+            'icon' => 'required|string',
+            'type' => 'required|string',
+        ]);
+
+        \App\Models\Platform::create($request->all());
+
+        return response()->json(['success' => true, 'message' => 'Platform added successfully']);
+    }
+
+    public function updatePlatform(Request $request, $id)
+    {
+        $request->validate([
+            'label' => 'required|string',
+            'icon' => 'required|string',
+            'type' => 'required|string',
+        ]);
+
+        $platform = \App\Models\Platform::findOrFail($id);
+        $platform->update($request->all());
+
+        return response()->json(['success' => true, 'message' => 'Platform updated successfully']);
+    }
+
+    public function deletePlatform($id)
+    {
+        $platform = \App\Models\Platform::findOrFail($id);
+        $platform->delete();
+
+        return response()->json(['success' => true, 'message' => 'Platform deleted successfully']);
     }
 
     public function exportAnalytics($id)
@@ -357,16 +417,20 @@ class AdminDashboardController extends Controller
             $file = fopen('php://output', 'w');
 
             // CSV Headers
-            fputcsv($file, ['Date', 'Time', 'IP Address', 'User Agent']);
+            fputcsv($file, ['Date', 'Time', 'IP Address', 'Device', 'Browser', 'OS', 'Location']);
 
             // CSV Data
             foreach ($analytics as $record) {
                 $datetime = Carbon::parse($record->created_at);
+                $location = ($record->city ?? 'Unknown') . ', ' . ($record->country ?? 'Unknown');
                 fputcsv($file, [
                     $datetime->format('Y-m-d'),
                     $datetime->format('H:i:s'),
                     $record->ip_address ?? 'N/A',
-                    $record->user_agent ?? 'N/A'
+                    $record->device_type ?? 'N/A',
+                    $record->browser ?? 'N/A',
+                    $record->os ?? 'N/A',
+                    $location
                 ]);
             }
 

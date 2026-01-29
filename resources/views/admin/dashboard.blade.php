@@ -11,6 +11,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/css/admin.css">
     <style>
+        @media (max-width: 600px) {
+            .modal-content {
+                margin: 5% auto !important;
+                width: 95% !important;
+                padding: 1.5rem !important;
+            }
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -110,6 +118,10 @@
         </div>
         <div class="nav-center">
             QR Code Generator
+            <button onclick="openPlatformModal()"
+                style="margin-left: 20px; background: rgba(255,255,255,0.2); border: none; padding: 5px 10px; color: white; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">
+                <i class="fa-solid fa-list"></i> Manage Platforms
+            </button>
         </div>
         <div class="nav-user">
             <span>{{ Auth::user()->name }}</span>
@@ -302,6 +314,103 @@
         </div>
     </div>
 
+    <!-- Platform Manager Modal -->
+    <div id="platformModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; width: 95%;">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Manage Platforms</h2>
+                <button onclick="closePlatformModal()" class="modal-close-btn"
+                    style="position: static;">&times;</button>
+            </div>
+
+            <div style="display: flex; gap: 20px;">
+                <!-- List Section -->
+                <div
+                    style="flex: 1; border-right: 1px solid #ddd; padding-right: 20px; max-height: 60vh; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 10px; text-align: left;">Label</th>
+                                <th style="padding: 10px; text-align: left;">Icon</th>
+                                <th style="padding: 10px; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="platformTableBody">
+                            @foreach($platforms as $platform)
+                                <tr id="platform-row-{{ $platform->id }}">
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ $platform->label }}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><i
+                                            class="{{ $platform->icon }}"></i> {{ $platform->icon }}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">
+                                        <button onclick='editPlatform(@json($platform))'
+                                            style="background: none; border: none; color: #3498db; cursor: pointer;"><i
+                                                class="fa-solid fa-pen"></i></button>
+                                        <button onclick="deletePlatform({{ $platform->id }})"
+                                            style="background: none; border: none; color: #e74c3c; cursor: pointer;"><i
+                                                class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Form Section -->
+                <div style="flex: 0 0 300px;">
+                    <h3 id="platformFormTitle" style="margin-top: 0;">Add New Platform</h3>
+                    <form id="platformForm" onsubmit="savePlatform(event)">
+                        <input type="hidden" id="platformId">
+
+                        <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                            <label style="display: block; margin-bottom: 5px;">Key (Unique ID)</label>
+                            <input type="text" id="platformKey" class="form-input" required placeholder="e.g. snapchat"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                            <label style="display: block; margin-bottom: 5px;">Label</label>
+                            <input type="text" id="platformLabel" class="form-input" required
+                                placeholder="e.g. Snapchat"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                            <label style="display: block; margin-bottom: 5px;">Icon Class (FontAwesome)</label>
+                            <input type="text" id="platformIcon" class="form-input" required
+                                placeholder="e.g. fa-brands fa-snapchat"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                            <label style="display: block; margin-bottom: 5px;">Type</label>
+                            <select id="platformType" class="form-input"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="url">URL</option>
+                                <option value="phone">Phone</option>
+                                <option value="sms">SMS</option>
+                                <option value="text">Text</option>
+                                <option value="whatsapp">WhatsApp</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                            <label style="display: block; margin-bottom: 5px;">Placeholder</label>
+                            <input type="text" id="platformPlaceholder" class="form-input"
+                                placeholder="e.g. https://snapchat.com/..."
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+
+                        <button type="submit" class="btn-confirm" style="width: 100%;">Save Platform</button>
+                        <button type="button" onclick="resetPlatformForm()" class="btn-cancel"
+                            style="width: 100%; margin-top: 10px;">Reset</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <!-- Edit Bio Page Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content" style="max-width: 600px; text-align: left;">
@@ -354,7 +463,19 @@
                 </div>
                 <button onclick="addEditLinkRow()"
                     style="background: #e3f2fd; color: #2196f3; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                    <i class="fa-solid fa-plus"></i> Add Link
+                    <i class="fa-solid fa-plus"></i> Add Social Link
+                </button>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Custom Links</label>
+                <div id="editCustomLinksContainer"
+                    style="max-height: 300px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
+                    <!-- Custom Links will be added here -->
+                </div>
+                <button onclick="addCustomLinkRow()"
+                    style="background: #efebe9; color: #795548; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    <i class="fa-solid fa-plus"></i> Add Custom Link
                 </button>
             </div>
 
@@ -387,8 +508,24 @@
                     style="font-size: 2rem; color: #2D3436; margin-left: 10px;">0</strong>
             </div>
 
-            <div style="height: 300px; position: relative;">
+            <div style="height: 300px; position: relative; margin-bottom: 30px;">
                 <canvas id="analyticsChart"></canvas>
+            </div>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3 style="text-align: center; margin-bottom: 15px; color: #636E72;">Device Breakdown</h3>
+                    <div style="height: 200px; position: relative;">
+                        <canvas id="deviceChart"></canvas>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3 style="text-align: center; margin-bottom: 15px; color: #636E72;">Top Locations</h3>
+                    <div id="locationList"
+                        style="height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
+                        <!-- Location items will be added here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -901,17 +1038,28 @@
             document.getElementById('editWebsite').value = page.website || '';
             document.getElementById('editTheme').value = page.theme || 'modern';
 
-            // Clear and Populate Links
-            const container = document.getElementById('editLinksContainer');
-            container.innerHTML = '';
+            // Clear and Populate Social Links
+            const socialContainer = document.getElementById('editLinksContainer');
+            socialContainer.innerHTML = '';
+
+            // Clear and Populate Custom Links
+            const customContainer = document.getElementById('editCustomLinksContainer');
+            customContainer.innerHTML = '';
 
             let links = [];
             try {
-                // page.links is likely a JSON string if not cast in model
                 links = typeof page.links === 'string' ? JSON.parse(page.links) : page.links;
             } catch (e) { links = []; }
 
-            links.forEach(link => addEditLinkRow(link));
+            if (links) {
+                links.forEach(link => {
+                    if (link.platform === 'custom') {
+                        addCustomLinkRow(link);
+                    } else {
+                        addEditLinkRow(link);
+                    }
+                });
+            }
 
             document.getElementById('editModal').style.display = 'block';
         }
@@ -921,38 +1069,20 @@
             editId = null;
         }
 
-        function addEditLinkRow(data = { platform: 'website', url: '' }) {
-            const container = document.getElementById('editLinksContainer');
+        // Platform Config replaced by dynamic PLATFORMS variable
+
+
+        function addCustomLinkRow(data = { label: '', url: '' }) {
+            const container = document.getElementById('editCustomLinksContainer');
             const row = document.createElement('div');
-            row.className = 'edit-link-row';
+            row.className = 'custom-link-row';
             row.style.display = 'flex';
             row.style.gap = '10px';
             row.style.marginBottom = '10px';
 
-            const platforms = [
-                { val: 'website', label: 'Website' },
-                { val: 'facebook', label: 'Facebook' },
-                { val: 'instagram', label: 'Instagram' },
-                { val: 'twitter', label: 'Twitter' },
-                { val: 'linkedin', label: 'LinkedIn' },
-                { val: 'youtube', label: 'YouTube' },
-                { val: 'tiktok', label: 'TikTok' },
-                { val: 'whatsapp', label: 'WhatsApp' },
-                { val: 'phone', label: 'Phone' },
-                { val: 'sms', label: 'SMS' },
-                { val: 'text', label: 'Plain Text' }
-            ];
-
-            let optionsHtml = '';
-            platforms.forEach(p => {
-                optionsHtml += `<option value="${p.val}" ${data.platform === p.val ? 'selected' : ''}>${p.label}</option>`;
-            });
-
             row.innerHTML = `
-                <select class="form-input edit-platform" style="flex:1; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
-                    ${optionsHtml}
-                </select>
-                <input type="text" class="form-input edit-url" value="${data.url}" placeholder="URL / Number / Text" style="flex:2; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <input type="text" class="form-input custom-label" value="${data.label || ''}" placeholder="Button Label" style="flex:1; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <input type="text" class="form-input custom-url" value="${data.url || ''}" placeholder="Destination URL" style="flex:2; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
                 <button type="button" onclick="this.parentElement.remove()" style="background:#ff6b6b; color:white; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(row);
@@ -973,10 +1103,21 @@
             const coverFile = document.getElementById('editCover').files[0];
 
             const links = [];
+            // Social Links
             document.querySelectorAll('.edit-link-row').forEach(row => {
                 const platform = row.querySelector('.edit-platform').value;
                 const url = row.querySelector('.edit-url').value;
-                if (url) links.push({ platform, url });
+                const label = row.querySelector('.edit-label').value;
+                if (url) links.push({ platform, url, label });
+            });
+
+            // Custom Links
+            document.querySelectorAll('.custom-link-row').forEach(row => {
+                const label = row.querySelector('.custom-label').value;
+                const url = row.querySelector('.custom-url').value;
+                if (label && url) {
+                    links.push({ platform: 'custom', label, url });
+                }
             });
 
             // Use FormData for file uploads
@@ -1015,6 +1156,7 @@
 
         // Analytics Functions
         let analyticsChart = null;
+        let deviceChart = null;
 
         function openAnalyticsModal(id, name) {
             document.getElementById('analyticsNameDisplay').textContent = name;
@@ -1034,16 +1176,12 @@
                     if (data.success) {
                         document.getElementById('analyticsTotalDisplay').textContent = data.total_visits;
 
-                        // Prepare chart data
+                        // --- Main Visits Chart ---
                         const labels = data.chart_data.map(item => item.date);
                         const values = data.chart_data.map(item => item.count);
 
-                        // Destroy existing chart if any
-                        if (analyticsChart) {
-                            analyticsChart.destroy();
-                        }
-
-                        // Create chart
+                        if (analyticsChart) analyticsChart.destroy();
+                        
                         const ctx = document.getElementById('analyticsChart').getContext('2d');
                         analyticsChart = new Chart(ctx, {
                             type: 'line',
@@ -1061,21 +1199,58 @@
                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            stepSize: 1
-                                        }
-                                    }
-                                }
+                                plugins: { legend: { display: false } },
+                                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                             }
                         });
+
+                        // --- Device Doughnut Chart ---
+                        if (deviceChart) deviceChart.destroy();
+
+                        const deviceLabels = data.device_data.map(item => item.device_type.toUpperCase());
+                        const deviceValues = data.device_data.map(item => item.count);
+                        const deviceColors = ['#FF6B6B', '#48dbfb', '#1dd1a1', '#feca57'];
+
+                        const ctxDevice = document.getElementById('deviceChart').getContext('2d');
+                        deviceChart = new Chart(ctxDevice, {
+                            type: 'doughnut',
+                            data: {
+                                labels: deviceLabels,
+                                datasets: [{
+                                    data: deviceValues,
+                                    backgroundColor: deviceColors,
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'right' } }
+                            }
+                        });
+
+
+                        // --- Top Locations List ---
+                        const locationList = document.getElementById('locationList');
+                        locationList.innerHTML = '';
+                        
+                        if (data.location_data && data.location_data.length > 0) {
+                            data.location_data.forEach(loc => {
+                                const item = document.createElement('div');
+                                item.style.display = 'flex';
+                                item.style.justifyContent = 'space-between';
+                                item.style.padding = '8px';
+                                item.style.borderBottom = '1px solid #f0f0f0';
+                                item.innerHTML = `
+                                    <span><i class="fa-solid fa-location-dot" style="color:#ff7675; margin-right:5px;"></i> ${loc.city}, ${loc.country}</span>
+                                    <strong>${loc.count}</strong>
+                                `;
+                                locationList.appendChild(item);
+                            });
+                        } else {
+                            locationList.innerHTML = '<p style="text-align:center; color:#ccc; margin-top:20px;">No location data</p>';
+                        }
+
                     } else {
                         showToast('Failed to load analytics', 'error');
                     }
@@ -1092,6 +1267,138 @@
                 analyticsChart.destroy();
                 analyticsChart = null;
             }
+            if (deviceChart) {
+                deviceChart.destroy();
+                deviceChart = null;
+            }
+        }
+        // Injected Platforms from Backend
+        const PLATFORMS = @json($platforms);
+
+        function addEditLinkRow(data = { platform: 'website', label: '', url: '' }) {
+            const container = document.getElementById('editLinksContainer');
+            const row = document.createElement('div');
+            row.className = 'edit-link-row';
+            row.style.display = 'flex';
+            row.style.gap = '10px';
+            row.style.marginBottom = '10px';
+
+            let optionsHtml = '';
+
+            // Generate options from injected PLATFORMS
+            if (PLATFORMS && PLATFORMS.length > 0) {
+                PLATFORMS.forEach(p => {
+                    optionsHtml += `<option value="${p.key}" ${data.platform === p.key ? 'selected' : ''}>${p.label}</option>`;
+                });
+            } else {
+                // Fallback if empty
+                optionsHtml = '<option value="website">Website</option>';
+            }
+
+
+            row.innerHTML = `
+                <select class="form-input edit-platform" style="flex:1; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                    ${optionsHtml}
+                </select>
+                <input type="text" class="form-input edit-label" value="${data.label || ''}" placeholder="Label (Optional)" style="width: 120px; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <input type="text" class="form-input edit-url" value="${data.url}" placeholder="URL / Number / Text" style="flex:2; padding: 0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#ff6b6b; color:white; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+            // Auto-scroll to bottom
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 10);
+        }
+
+        // --- Platform Manager JS ---
+        function openPlatformModal() {
+            document.getElementById('platformModal').style.display = 'block';
+            resetPlatformForm();
+        }
+
+        function closePlatformModal() {
+            document.getElementById('platformModal').style.display = 'none';
+        }
+
+        function resetPlatformForm() {
+            document.getElementById('platformForm').reset();
+            document.getElementById('platformId').value = '';
+            document.getElementById('platformKey').disabled = false;
+            document.getElementById('platformFormTitle').innerText = 'Add New Platform';
+        }
+
+        function editPlatform(platform) {
+            document.getElementById('platformId').value = platform.id;
+            document.getElementById('platformKey').value = platform.key;
+            document.getElementById('platformKey').disabled = true; // Key cannot be changed
+            document.getElementById('platformLabel').value = platform.label;
+            document.getElementById('platformIcon').value = platform.icon;
+            document.getElementById('platformType').value = platform.type;
+            document.getElementById('platformPlaceholder').value = platform.placeholder || '';
+            document.getElementById('platformFormTitle').innerText = 'Edit Platform';
+        }
+
+        function savePlatform(event) {
+            event.preventDefault();
+            const id = document.getElementById('platformId').value;
+            const isEdit = !!id;
+            const url = isEdit ? `/admin/platforms/${id}` : '/admin/platforms';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const payload = {
+                key: document.getElementById('platformKey').value,
+                label: document.getElementById('platformLabel').value,
+                icon: document.getElementById('platformIcon').value,
+                type: document.getElementById('platformType').value,
+                placeholder: document.getElementById('platformPlaceholder').value
+            };
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message);
+                        location.reload(); // Reload to reflect changes in PHP rendered list and JS variable
+                    } else {
+                        showToast('Action failed', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Error saving platform', 'error');
+                });
+        }
+
+        function deletePlatform(id) {
+            if (!confirm('Are you sure you want to delete this platform?')) return;
+
+            fetch(`/admin/platforms/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message);
+                        document.getElementById(`platform-row-${id}`).remove();
+                    } else {
+                        showToast('Delete failed', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Error deleting platform', 'error');
+                });
         }
     </script>
 </body>

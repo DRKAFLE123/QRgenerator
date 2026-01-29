@@ -155,7 +155,12 @@
         @endif
 
         <div class="links">
-            @foreach($links as $link)
+            @php
+                $custom_links = array_filter($links ?? [], fn($l) => ($l['platform'] ?? '') === 'custom');
+                $social_links = array_filter($links ?? [], fn($l) => ($l['platform'] ?? '') !== 'custom');
+            @endphp
+
+            @foreach($social_links as $link)
                 @if(($link['platform'] ?? '') === 'text')
                     <div class="link-btn"
                         style="cursor: default; background: rgba(0,0,0,0.03); border: none; box-shadow: none; display: block; text-align: left; padding: 15px;">
@@ -163,24 +168,25 @@
                     </div>
                 @else
                     @php
-                        $platform = $link['platform'] ?? 'website';
+                        $platformKey = $link['platform'] ?? 'website';
                         $url = $link['url'];
-                        $label = ucfirst($platform);
-                        $icon = "fa-brands fa-{$platform}";
+
+                        // Fallback to website if platform not found in DB
+                        $platformData = $platforms[$platformKey] ?? $platforms['website'] ?? null;
+
+                        // If completely missing, define defaults
+                        $label = !empty($link['label']) ? $link['label'] : ($platformData ? $platformData->label : ucfirst($platformKey));
+                        $icon = $platformData ? $platformData->icon : 'fa-solid fa-globe';
+                        $type = $platformData ? $platformData->type : 'url';
                         $target = "_blank";
 
-                        if ($platform === 'website') {
-                            $icon = "fa-solid fa-globe";
-                        } elseif ($platform === 'phone') {
-                            $icon = "fa-solid fa-phone";
+                        if ($type === 'phone') {
                             $url = "tel:" . preg_replace('/[^0-9+]/', '', $link['url']);
                             $target = "_self";
-                        } elseif ($platform === 'sms') {
-                            $icon = "fa-solid fa-comment-sms";
+                        } elseif ($type === 'sms') {
                             $url = "sms:" . preg_replace('/[^0-9+]/', '', $link['url']);
                             $target = "_self";
-                        } elseif ($platform === 'whatsapp') {
-                            $icon = "fa-brands fa-whatsapp";
+                        } elseif ($type === 'whatsapp') {
                             $url = "https://wa.me/" . preg_replace('/[^0-9]/', '', $link['url']);
                             $target = "_blank";
                         }
@@ -189,6 +195,12 @@
                         <i class="{{ $icon }}"></i> {{ $label }}
                     </a>
                 @endif
+            @endforeach
+
+            @foreach($custom_links as $link)
+                <a href="{{ $link['url'] }}" target="_blank" class="link-btn">
+                    <i class="fa-solid fa-link"></i> {{ $link['label'] ?? 'Link' }}
+                </a>
             @endforeach
         </div>
 

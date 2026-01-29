@@ -10,6 +10,71 @@ use Illuminate\Support\Facades\Storage;
 
 class BioPageController extends Controller
 {
+    private function parseUserAgent($userAgent)
+    {
+        $device = 'desktop';
+        if (preg_match('/(tablet|ipad|playbook)|(android(?!.*(mobi|opera mini)))/i', $userAgent)) {
+            $device = 'tablet';
+        } elseif (preg_match('/(up.browser|up.link|mmp|symbian|smartphone|midp|wap|phone|android|iemobile)/i', $userAgent)) {
+            $device = 'mobile';
+        } elseif (preg_match('/bot|crawl|slurp|spider|mediapartners/i', $userAgent)) {
+            $device = 'robot';
+        }
+
+        $browser = 'unknown';
+        if (preg_match('/MSIE/i', $userAgent) && !preg_match('/Opera/i', $userAgent)) {
+            $browser = 'Internet Explorer';
+        } elseif (preg_match('/Firefox/i', $userAgent)) {
+            $browser = 'Firefox';
+        } elseif (preg_match('/Chrome/i', $userAgent)) {
+            $browser = 'Chrome';
+        } elseif (preg_match('/Safari/i', $userAgent)) {
+            $browser = 'Safari';
+        } elseif (preg_match('/Opera/i', $userAgent)) {
+            $browser = 'Opera';
+        } elseif (preg_match('/Netscape/i', $userAgent)) {
+            $browser = 'Netscape';
+        }
+
+        $os = 'unknown';
+        if (preg_match('/linux/i', $userAgent)) {
+            $os = 'Linux';
+        } elseif (preg_match('/macintosh|mac os x/i', $userAgent)) {
+            $os = 'Mac';
+        } elseif (preg_match('/windows|win32/i', $userAgent)) {
+            $os = 'Windows';
+        } else if (preg_match('/android/i', $userAgent)) {
+            $os = "Android";
+        } else if (preg_match('/iphone/i', $userAgent)) {
+            $os = "iPhone";
+        }
+
+        return ['device' => $device, 'browser' => $browser, 'os' => $os];
+    }
+
+    private function getLocationFromIp($ip)
+    {
+        // Skip local IP
+        if ($ip === '127.0.0.1' || $ip === '::1') {
+            return ['city' => 'Localhost', 'country' => 'Localhost'];
+        }
+
+        try {
+            // Use a free IP API with a timeout to prevent hanging
+            $json = @file_get_contents("http://ip-api.com/json/{$ip}?fields=city,country", false, stream_context_create(['http' => ['timeout' => 2]]));
+            if ($json) {
+                $data = json_decode($json, true);
+                if ($data && ($data['status'] ?? '') === 'success') {
+                    return ['city' => $data['city'], 'country' => $data['country']];
+                }
+            }
+        } catch (\Exception $e) {
+            // Fail silently
+        }
+
+        return ['city' => 'Unknown', 'country' => 'Unknown'];
+    }
+
     private function generatePermalink($name)
     {
         $slug = Str::slug($name);
@@ -101,11 +166,23 @@ class BioPageController extends Controller
         }
 
         // Log Analytics
+        // Log Analytics
         try {
+            $userAgent = request()->userAgent();
+            $ip = request()->ip();
+
+            $uaData = $this->parseUserAgent($userAgent);
+            $geoData = $this->getLocationFromIp($ip);
+
             DB::table('bio_page_analytics')->insert([
                 'bio_page_id' => $page->id,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
+                'ip_address' => $ip,
+                'user_agent' => $userAgent,
+                'device_type' => $uaData['device'],
+                'browser' => $uaData['browser'],
+                'os' => $uaData['os'],
+                'city' => $geoData['city'],
+                'country' => $geoData['country'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -121,6 +198,9 @@ class BioPageController extends Controller
             $viewName = 'bio-page';
         }
 
+        // Fetch platforms for icon lookup
+        $platforms = \App\Models\Platform::where('is_active', true)->get()->keyBy('key');
+
         return view($viewName, [
             'name' => $page->name,
             'links' => $links,
@@ -128,7 +208,8 @@ class BioPageController extends Controller
             'bg_color' => $page->bg_color,
             'logo_path' => $page->logo_path ? asset('storage/' . $page->logo_path) : null,
             'cover_path' => $page->cover_path ? asset('storage/' . $page->cover_path) : null,
-            'website' => $page->website
+            'website' => $page->website,
+            'platforms' => $platforms
         ]);
     }
 }
