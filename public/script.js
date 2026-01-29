@@ -1,5 +1,6 @@
-const API_URL = 'http://127.0.0.1:8000/api/generate-qr';
-const BIO_API_URL = 'http://127.0.0.1:8000/api/create-bio';
+const BASE_URL = (window.Laravel && window.Laravel.appUrl) ? window.Laravel.appUrl : 'http://127.0.0.1:8000';
+const API_URL = `${BASE_URL}/api/generate-qr`;
+const BIO_API_URL = `${BASE_URL}/api/create-bio`;
 
 // File Size Validation (10MB limit)
 function validateFileSize(input, errorId) {
